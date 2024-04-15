@@ -8,12 +8,11 @@ from typing import Any, Deque, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 from login import HEADERS
 from market import Good, MarketTransaction
-from navigation import NavigationWaypoint
+from navigation import ShipNavRouteWaypoint, WaypointSymbol, get_waypoint_with_symbol
 from observable import Observable
 from survey import Survey
 from utils import error_wrap, format_time_ms, print_json, success_wrap, time_until
 from requests import Response, get, post, patch
-from waypoint import WaypointSymbol
 
 
 SHIPS_BASE_URL = 'https://api.spacetraders.io/v2/my/ships'
@@ -56,8 +55,8 @@ class ShipCooldown(BaseModel):
 
 
 class ShipNavRoute(BaseModel):
-    destination: NavigationWaypoint
-    origin: NavigationWaypoint
+    destination: ShipNavRouteWaypoint
+    origin: ShipNavRouteWaypoint
     departureTime: datetime
     arrival: datetime
 
@@ -314,6 +313,35 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False
 
+    def navigate(self, destination: WaypointSymbol) -> bool:
+        self.log(f"Attempting to Navigate To {destination.system}")
+        if self.nav.status != ShipNavStatus.IN_ORBIT:
+            self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
+            return False
+        data = {"waypointSymbol": destination.waypoint_string}
+        response = post(f"{SHIPS_BASE_URL}/{self.symbol}/navigate",
+                        headers=HEADERS, json=data)
+        js = response.json()
+        if response.ok:
+            try:
+                new_fuel = ShipFuel.model_validate(js["data"]["fuel"])
+                new_nav = ShipNav.model_validate(js["data"]["nav"])
+                self.fuel = new_fuel
+                self.nav = new_nav
+                self.log(f"Navigation Successful Arriving at {
+                         self.nav.route.arrival}", success=True)
+                self.update()
+                return True
+            except ValidationError as e:
+                self.log(f"Bad RESPONSE: {
+                         json.dumps(js, indent=1)}", error=True)
+                self.log(e)
+                return False
+        else:
+            self.log(f"Attempt Failed:\n{json.dumps(
+                js, indent=1)}", error=True)
+            return False
+
 
 def get_ship_list() -> List[Ship]:
     ta = TypeAdapter(List[Ship])
@@ -360,11 +388,11 @@ def extract(id: str, survey=None) -> Optional[Dict[str, Any]]:
     return response.json()
 
 
-def set_navigation_destination(id: str, destination: WaypointSymbol) -> Optional[Dict[str, Any]]:
-    data = {"waypointSymbol": destination.waypoint_string}
-    response = post(f"{SHIPS_BASE_URL}/{id}/navigate",
-                    headers=HEADERS, json=data)
-    return response.json()
+# def set_navigation_destination(id: str, destination: WaypointSymbol) -> Optional[Dict[str, Any]]:
+#     data = {"waypointSymbol": destination.waypoint_string}
+#     response = post(f"{SHIPS_BASE_URL}/{id}/navigate",
+#                     headers=HEADERS, json=data)
+#     return response.json()
 
 
 def patch_navigation(id: str, speed: str) -> Optional[Dict[str, Any]]:
@@ -408,8 +436,7 @@ if __name__ == "__main__":
                 elif args.navigate:
                     print(f"{args.id}:ATTEMPTING TO SET DESTINATION {
                           args.navigate}")
-                    print_json(set_navigation_destination(args.id, WaypointSymbol(
-                        *WaypointSymbol.split_symbol(args.navigate))))
+                    print(ship.navigate(get_waypoint_with_symbol(args.navigate)))
                 elif args.patch_navigation:
                     print(f"{args.id}:ATTEMPTING TO SET SPEED TO {
                           args.patch_navigation}")
@@ -429,4 +456,4 @@ if __name__ == "__main__":
                     print(ship.jettison(args.jettison))
                 else:
                     print(f"{args.id}: SHIP DATA")
-                    print_json(ship)
+                    print(ship.model_dump_json(indent=2))

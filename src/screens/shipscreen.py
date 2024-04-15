@@ -33,11 +33,12 @@ class ShipInventoryTable(CustomDataTable):
         self.add_column("Good", key="Good", width=30)
         self.cursor_type = "row"
         self.styles.height = "100%"
+        self.border_subtitle = f"{
+            self.ship.cargo.units}/{self.ship.cargo.capacity}"
         self.update(self.ship)
 
     def on_data_table_row_selected(self, row_selected):
-        self.ship.sell(row_selected.row_key.value)
-    
+        self.ship.jettison(row_selected.row_key.value)
 
     def update(self, ship):
         inventory = self.ship.cargo.items()
@@ -52,6 +53,8 @@ class ShipInventoryTable(CustomDataTable):
         for rk in inventory:
             if rk not in self.rows:
                 self.add_row(inventory[rk], rk, key=rk)
+        self.border_subtitle = f"{
+            self.ship.cargo.units}/{self.ship.cargo.capacity}"
 
     def on_mount(self):
         self.ship.add_observer(self.update)
@@ -87,8 +90,6 @@ class ShipScreen(Screen):
 
         self.inventory_table = ShipInventoryTable(self.ship,
                                                   id="datatable-inventory", classes="box table")
-        self.inventory_table.border_subtitle = f"{
-            self.ship.cargo.units}/{self.ship.cargo.capacity}"
 
         self.log_panel = RichLog(
             markup=True, wrap=True, classes="box", id="panel-logs")
