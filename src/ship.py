@@ -160,7 +160,31 @@ class Ship(BaseModel, Observable):
             self.log("Orbit Successful", success=True)
             return True
         else:
-            self.log(f"Attempt Failed:\n{json.dumps(
+            self.log(f"Attempt Failed: \n{json.dumps(
+                response.json(), indent=1)}", error=True)
+            return False
+
+    def dock(self) -> bool:
+        self.log(f"Attempting to Dock")
+        if self.nav.status != ShipNavStatus.IN_ORBIT:
+            self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
+            return False
+        response: Response = post(
+            f"{SHIPS_BASE_URL}/{self.symbol}/dock", headers=HEADERS)
+        if response.ok:
+            try:
+                new_nav = ShipNav.model_validate(
+                    response.json()["data"]["nav"])
+                self.nav = new_nav
+                self.update()
+            except ValidationError as e:
+                self.log(f"Bad RESPONSE: {json.dumps(
+                    response.json(), indent=1)}", error=True)
+
+            self.log("Dock Successful", success=True)
+            return True
+        else:
+            self.log(f"Attempt Failed: \n{json.dumps(
                 response.json(), indent=1)}", error=True)
             return False
 
@@ -186,10 +210,48 @@ class Ship(BaseModel, Observable):
             self.log(surveys)
             return True, surveys
         else:
-            self.log(f"Attempt Failed:\n{json.dumps(
+            self.log(f"Attempt Failed: \n{json.dumps(
                 response.json(), indent=1)}", error=True)
             return False, None
 
+    def extract(self, survey=None) -> Tuple[bool, Optional[Extraction]]:
+        self.log(f"Attempting to Extract")
+        if self.nav.status != ShipNavStatus.IN_ORBIT:
+            self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
+            return False, None
+        if self.cooldown.time_remaining.total_seconds() > 0:
+            self.log("Attempt Failed: Ship is ON COOLDOWN", error=True)
+            return False, None
+        if survey:
+            response = post(f"{SHIPS_BASE_URL}/{self.symbol}/extract",
+                            json=survey, headers=HEADERS)
+        else:
+            response = post(
+                f"{SHIPS_BASE_URL}/{self.symbol}/extract", headers=HEADERS)
+
+        js = response.json()
+        if response.ok:
+            try:
+                new_cooldown = ShipCooldown.model_validate(
+                    js["data"]["cooldown"])
+                extraction = Extraction.model_validate(
+                    js["data"]["extraction"])
+                new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
+                self.cooldown = new_cooldown
+                self.cargo = new_cargo
+                self.log(str(extraction))
+                self.log("Extract Successful", success=True)
+                self.update()
+                return True, extraction
+            except ValidationError as e:
+                self.log(f"Bad RESPONSE: {
+                         json.dumps(js, indent=1)}", error=True)
+                self.log(e)
+                return False, None
+        else:
+            self.log(f"Attempt Failed: \n{json.dumps(
+                js, indent=1)}", error=True)
+            return False, None
     def dock(self) -> bool:
         self.log(f"Attempting to Dock")
         if self.nav.status != ShipNavStatus.IN_ORBIT:
@@ -244,45 +306,36 @@ class Ship(BaseModel, Observable):
             self.log(f"Attempt Failed:\n{json.dumps(
                 js, indent=1)}", error=True)
             return False
-
-    def extract(self, survey=None) -> Tuple[bool, Optional[Extraction]]:
-        self.log(f"Attempting to Extract")
-        if self.nav.status != ShipNavStatus.IN_ORBIT:
-            self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
-            return False, None
-        if self.cooldown.time_remaining.total_seconds() > 0:
-            self.log("Attempt Failed: Ship is ON COOLDOWN", error=True)
-            return False, None
-        if survey:
-            response = post(f"{SHIPS_BASE_URL}/{self.symbol}/extract",
-                            json=survey, headers=HEADERS)
-        else:
-            response = post(
-                f"{SHIPS_BASE_URL}/{self.symbol}/extract", headers=HEADERS)
-
+    def sell(self, good_symbol) -> bool:
+        units = self.cargo.items()[good_symbol]
+        self.log(f"Attempting To Sell {units} Units of {good_symbol}")
+        payload = {"symbol": good_symbol,
+                   "units": units}
+        if self.nav.status != ShipNavStatus.DOCKED:
+            self.log("Attempt Failed: Ship is NOT DOCKED", error=True)
+            return False
+        response = post(f"{SHIPS_BASE_URL}/{self.symbol}/sell",
+                        json=payload, headers=HEADERS)
         js = response.json()
         if response.ok:
             try:
-                new_cooldown = ShipCooldown.model_validate(
-                    js["data"]["cooldown"])
-                extraction = Extraction.model_validate(
-                    js["data"]["extraction"])
                 new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
-                self.cooldown = new_cooldown
+                transaction = MarketTransaction.model_validate(
+                    js["data"]["transaction"])
                 self.cargo = new_cargo
-                self.log(str(extraction))
-                self.log("Extract Successful", success=True)
+                self.log(js["data"]["transaction"])
+                self.log("Sell Successful", success=True)
                 self.update()
-                return True, extraction
+                return True
             except ValidationError as e:
                 self.log(f"Bad RESPONSE: {
                          json.dumps(js, indent=1)}", error=True)
                 self.log(e)
-                return False, None
+                return False
         else:
-            self.log(f"Attempt Failed:\n{json.dumps(
+            self.log(f"Attempt Failed: \n{json.dumps(
                 js, indent=1)}", error=True)
-            return False, None
+            return False
 
     def jettison(self, good_symbol) -> bool:
         units = self.cargo.items()[good_symbol]
@@ -290,7 +343,7 @@ class Ship(BaseModel, Observable):
         payload = {"symbol": good_symbol,
                    "units": units}
         if self.nav.status != ShipNavStatus.IN_ORBIT:
-            self.log("Attempt Failed: Ship is NOT DOCKED", error=True)
+            self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
             return False
         response = post(f"{SHIPS_BASE_URL}/{self.symbol}/jettison",
                         json=payload, headers=HEADERS)
@@ -309,7 +362,60 @@ class Ship(BaseModel, Observable):
                 self.log(e)
                 return False
         else:
-            self.log(f"Attempt Failed:\n{json.dumps(
+            self.log(f"Attempt Failed: \n{json.dumps(
+                js, indent=1)}", error=True)
+            return False
+
+    def refuel(self) -> bool:
+        self.log(f"Attempting To Refuel")
+        if self.nav.status != ShipNavStatus.DOCKED:
+            self.log("Attempt Failed: Ship is NOT DOCKED", error=True)
+            return False
+        response = post(
+            f"{SHIPS_BASE_URL}/{self.symbol}/refuel", headers=HEADERS)
+        js = response.json()
+        print_json(js)
+        if response.ok:
+            try:
+                new_fuel = ShipFuel.model_validate(js["data"]["fuel"])
+                transaction = MarketTransaction.model_validate(js["data"]["transaction"])
+                self.fuel = new_fuel
+                self.log("Refuel Successful", success=True)
+                self.log(transaction)
+                self.update()
+                return True
+            except ValidationError as e:
+                self.log(f"Bad RESPONSE: {
+                         json.dumps(js, indent=1)}", error=True)
+                self.log(e)
+                return False
+        else:
+            self.log(f"Attempt Failed: \n{json.dumps(
+                js, indent=1)}", error=True)
+            return False
+    
+    def change_flight_mode(self, flight_mode: ShipNavFlightMode) -> bool:
+        self.log(f"Attempting To Change Flight Mode to {flight_mode}")
+        data = {"flightMode": flight_mode}
+
+        response = patch(
+            f"{SHIPS_BASE_URL}/{self.symbol}/nav",json = data, headers=HEADERS)
+        js = response.json()
+        print_json(js)
+        if response.ok:
+            try:
+                nav = ShipNav.model_validate(js["data"])
+                self.nav = nav
+                self.log("Flight Mode Change Successful", success=True)
+                self.update()
+                return True
+            except ValidationError as e:
+                self.log(f"Bad RESPONSE: {
+                         json.dumps(js, indent=1)}", error=True)
+                self.log(e)
+                return False
+        else:
+            self.log(f"Attempt Failed: \n{json.dumps(
                 js, indent=1)}", error=True)
             return False
 
@@ -356,21 +462,6 @@ def get_ship_table() -> Dict[str, Ship]:
 
 def get_ship_info(id: str) -> Optional[Dict[str, Any]]:
     response: Response = get(f"{SHIPS_BASE_URL}/{id}", headers=HEADERS)
-    return response.json()
-
-
-def orbit_ship(id: str) -> Optional[Dict[str, Any]]:
-    response = post(f"{SHIPS_BASE_URL}/{id}/orbit", headers=HEADERS)
-    return response.json()
-
-
-def dock_ship(id: str) -> Optional[Dict[str, Any]]:
-    response = post(f"{SHIPS_BASE_URL}/{id}/dock", headers=HEADERS)
-    return response.json()
-
-
-def survey(id: str) -> Optional[Dict[str, Any]]:
-    response = post(f"{SHIPS_BASE_URL}/{id}/survey", headers=HEADERS)
     return response.json()
 
 
@@ -434,14 +525,13 @@ if __name__ == "__main__":
                     print(f"{args.id}: ATTEMPTING TO DOCK")
                     print(ship.dock())
                 elif args.navigate:
-                    print(f"{args.id}:ATTEMPTING TO SET DESTINATION {
+                    print(f"{args.id}: ATTEMPTING TO SET DESTINATION {
                           args.navigate}")
                     print(ship.navigate(get_waypoint_with_symbol(args.navigate)))
                 elif args.patch_navigation:
-                    print(f"{args.id}:ATTEMPTING TO SET SPEED TO {
+                    print(f"{args.id}: ATTEMPTING TO SET SPEED TO {
                           args.patch_navigation}")
-                    print_json(patch_navigation(
-                        args.id, args.patch_navigation))
+                    print(ship.change_flight_mode(ShipNavFlightMode(args.patch_navigation)))
                 elif args.survey:
                     print(f"{args.id}:ATTEMPTING TO SURVEY")
                     print(ship.survey())
@@ -450,7 +540,7 @@ if __name__ == "__main__":
                     print(ship.extract())
                 elif args.refuel:
                     print(f"{args.id}:ATTEMPTING TO REFUEL")
-                    print_json(refuel(args.id))
+                    print(ship.refuel())
                 elif args.jettison:
                     print(f"{args.id}:ATTEMPTING TO JETTISON")
                     print(ship.jettison(args.jettison))
