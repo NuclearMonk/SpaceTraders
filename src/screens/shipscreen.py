@@ -139,10 +139,6 @@ class ShipScreen(Screen):
     def action_extract(self) -> None:
         self.ship.extract()
 
-    def update_logs(self):
-        while self.ship.logs:
-            self.log_panel.write(self.ship.logs.popleft())
-
     def update_mounts(self):
         self.mounts_table.clear()
         for mount in self.ship.mounts:
@@ -158,9 +154,7 @@ class ShipScreen(Screen):
         self.fuel.value = f"{
             self.ship.fuel.current} / {self.ship.fuel.capacity}"
         self.cooldown.value = self.ship.cooldown.time_remaining
-
         self.update_mounts()
-        self.update_logs()
 
     def tick_seconds(self):
         self.eta.value = str(self.ship.nav.route.time_remaining).split(".")[0]
@@ -170,6 +164,7 @@ class ShipScreen(Screen):
     def on_mount(self) -> None:
         self.update_mounts()
         self.ship.add_observer(self.update)
+        self.ship.logger = self.log_panel.write
         self.set_interval(1, self.tick_seconds)
 
     def on_unmount(self):

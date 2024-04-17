@@ -3,16 +3,19 @@ from textual.app import ComposeResult
 from textual.widgets import DataTable
 from textual.screen import Screen
 from screens.shipscreen import ShipScreen
-from ship import Ship, get_ship_table
+from ship import Ship, get_ship_list
 from utils import format_time_ms
 
 
 class ShipListScreen(Screen):
     CSS_PATH = None
-    ships: Dict[str, Ship] = get_ship_table()
 
-    def compose(self) -> ComposeResult:     
-        yield DataTable(zebra_stripes=True)  
+    def __init__(self, ships: Dict[str, Ship]) -> None:
+        self.ships = ships
+        super().__init__()
+
+    def compose(self) -> ComposeResult:
+        yield DataTable(zebra_stripes=True)
 
     def tick_seconds(self):
         for ship_id, ship in self.ships.items():

@@ -1,4 +1,6 @@
+from typing import Type
 from textual.app import App, ComposeResult
+from textual.driver import Driver
 from textual.widgets import Header, Footer
 
 from screens.shiplistscreen import ShipListScreen
@@ -7,7 +9,10 @@ from screens.shiplistscreen import ShipListScreen
 class SpaceTraders(App):
 
     BINDINGS = [("d", "toggle_dark", "Toggle Dark Mode")]
-    SCREENS = {"ship_list": ShipListScreen()}
+
+    def __init__(self, ships):
+        self.ships = ships
+        super().__init__()
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -17,4 +22,5 @@ class SpaceTraders(App):
         self.dark = not self.dark
 
     def on_mount(self) -> None:
+        self.install_screen(ShipListScreen(self.ships), "ship_list")
         self.push_screen("ship_list")

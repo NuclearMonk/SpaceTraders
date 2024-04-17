@@ -3,7 +3,6 @@ import json
 from utils import print_json
 from pathlib import Path
 from os import path
-
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
 CREDENTIALS_PATH = Path("data/apikey")
 USERNAME = "shocsoares"
