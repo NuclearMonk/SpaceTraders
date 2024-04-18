@@ -56,7 +56,7 @@ class ShipListScreen(Screen):
         self.ship_table.update_cell(ship.symbol, "Status", ship.nav.status)
         self.ship_table.update_cell(ship.symbol, "Mode", ship.nav.flightMode)
         self.ship_table.update_cell(
-            ship.symbol, "Mode", ship.nav.route.destination.symbol)
+            ship.symbol, "Mode", ship.nav.flightMode)
         self.ship_table.update_cell(
             ship.symbol, "Arrival Time", format_time_ms(ship.nav.route.arrival))
         self.ship_table.update_cell(

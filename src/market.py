@@ -63,6 +63,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.symbol:
         if market := get_market(WaypointSymbol(*WaypointSymbol.split_symbol(args.symbol))):
-            print(market)
+            print(market.model_dump_json(indent=2))
     else:
         print("ERROR GETTING SYSTEM DATA")

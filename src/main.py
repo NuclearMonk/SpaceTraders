@@ -1,15 +1,13 @@
-import asyncio
+from asyncio import run
 from typing import Dict
-from ai.extract import extract_loop
+from ai.mining_ship import MinerShipController
 from ship import Ship, get_ship_list
 from ui import SpaceTraders
 
-async def main():
-    ships: Dict[str, Ship] = {ship.symbol: ship for ship in get_ship_list()}
-    extract_task = asyncio.create_task(extract_loop(ships["SHOCSOARES-1"]))
-    #app = SpaceTraders(ships)
-    #await app.run()
-    await extract_task
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    ships: Dict[str, Ship] = {ship.symbol: ship for ship in get_ship_list()}
+    ship_controllers = [MinerShipController(ships["SHOCSOARES-1"], "X1-VD53-XD5D",
+                                "X1-VD53-H45", ["COPPER_ORE", "ALUMINUM_ORE", "IRON_ORE"])]
+    app = SpaceTraders(ships, ship_controllers)
+    app.run()

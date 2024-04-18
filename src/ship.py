@@ -1,9 +1,9 @@
 from argparse import ArgumentParser, Namespace
-from collections import deque
+from asyncio import sleep
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
-from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 from login import HEADERS
@@ -11,9 +11,10 @@ from market import Good, MarketTransaction
 from navigation import ShipNavRouteWaypoint, WaypointSymbol, get_waypoint_with_symbol
 from observable import Observable
 from survey import Survey
-from utils import error_wrap, format_time_ms, print_json, success_wrap, time_until
+from utils import error_wrap, format_time_ms, print_json, success_wrap, time_until, console
 from requests import Response, get, post, patch
-from utils import console
+
+
 SHIPS_BASE_URL = 'https://api.spacetraders.io/v2/my/ships'
 
 
@@ -100,6 +101,10 @@ class ShipCargo(BaseModel):
     units: int
     inventory: List[ShipCargoItem]
 
+    @property
+    def capacity_remaining(self):
+        return self.capacity - self.units
+
     def items(self) -> Dict[str, int]:
         return {entry.symbol: entry.units for entry in self.inventory}
 
@@ -118,6 +123,24 @@ class ShipMount(BaseModel):
     deposits: Optional[List[str]] = None
     requirements: ShipRequirements
 
+class ShipComponent(BaseModel):
+    symbol :str
+    name :str 
+    description: str
+    condition : float
+    integrity :float
+    requirements : ShipRequirements
+
+class ShipFrame(ShipComponent):
+    moduleSlots : int
+    mountingPoints : int
+    fuelCapacity : int
+class ShipReactor(ShipComponent):
+    powerOutput: int
+
+class ShipEngine(ShipComponent):
+    speed: int
+
 
 class Ship(BaseModel, Observable):
     symbol: str
@@ -126,6 +149,9 @@ class Ship(BaseModel, Observable):
     fuel: ShipFuel
     cooldown: ShipCooldown
     cargo: ShipCargo
+    frame: ShipFrame
+    reactor: ShipReactor
+    engine: ShipEngine
     mounts: List[ShipMount]
     logger: Optional[Callable[[str], None]] = Field(print, exclude=True)
 
@@ -251,8 +277,9 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False, None
 
-    def sell(self, good_symbol) -> bool:
-        units = self.cargo.items()[good_symbol]
+    def sell(self, good_symbol: str, units = -1) -> bool:
+        if units == -1:
+            units = self.cargo.items()[good_symbol]
         self.log(f"Attempting To Sell {units} Units of {good_symbol}")
         payload = {"symbol": good_symbol,
                    "units": units}
@@ -282,8 +309,9 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False
 
-    def jettison(self, good_symbol) -> bool:
-        units = self.cargo.items()[good_symbol]
+    def jettison(self, good_symbol, units =0) -> bool:
+        if units==0:
+            units = self.cargo.items()[good_symbol]
         self.log(f"Attempting To Jettison {units} Units of {good_symbol}")
         payload = {"symbol": good_symbol,
                    "units": units}
@@ -364,12 +392,12 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False
 
-    def navigate(self, destination: WaypointSymbol) -> bool:
-        self.log(f"Attempting to Navigate To {destination.system}")
+    async def navigate(self, destination: WaypointSymbol) -> bool:
+        self.log(f"Attempting to Navigate To {destination.symbol}")
         if self.nav.status != ShipNavStatus.IN_ORBIT:
             self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
             return False
-        data = {"waypointSymbol": destination.waypoint_string}
+        data = {"waypointSymbol": destination.symbol}
         response = post(f"{SHIPS_BASE_URL}/{self.symbol}/navigate",
                         headers=HEADERS, json=data)
         js = response.json()
@@ -382,6 +410,8 @@ class Ship(BaseModel, Observable):
                 self.log(f"Navigation Successful Arriving at {
                          self.nav.route.arrival}", success=True)
                 self.update()
+                await sleep(self.nav.route.time_remaining.total_seconds())
+                self.nav.status = ShipNavStatus.IN_ORBIT
                 return True
             except ValidationError as e:
                 self.log(f"Bad RESPONSE: {
