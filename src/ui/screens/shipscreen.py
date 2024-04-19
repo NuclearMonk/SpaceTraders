@@ -5,7 +5,7 @@ from textual.widgets import Header, Footer, Label, RichLog
 from textual.widgets.data_table import Row
 from textual.containers import Vertical, Container
 from rich.console import ConsoleRenderable, RichCast
-from models.ship import Ship
+from schemas.ship import Ship
 from ui.widgets.custom_datatable import CustomDataTable
 
 

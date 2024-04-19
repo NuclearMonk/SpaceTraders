@@ -2,9 +2,9 @@
 from asyncio import sleep
 from typing import List, override
 from ai.ship_controller import ShipController
-from models.navigation import BaseWaypoint, get_waypoint_with_symbol
-from models.ship import Ship, ShipNavStatus
-from models.survey import Survey
+from schemas.navigation import BaseWaypoint, get_waypoint_with_symbol
+from schemas.ship import Ship, ShipNavStatus
+from schemas.survey import Survey
 
 
 class MinerShipController(ShipController):

@@ -3,7 +3,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer
 from ai.ship_controller import ShipController
 from ui.screens.shiplistscreen import ShipListScreen
-from models.ship import Ship
+from schemas.ship import Ship
 
 
 class SpaceTraders(App):

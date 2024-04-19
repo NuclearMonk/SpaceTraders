@@ -1,6 +1,6 @@
 
 
-from models.ship import Ship
+from schemas.ship import Ship
 from utils.utils import console
 
 

@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from utils.utils import print_json
-from models.navigation import BasicWaypoint, System, get_system_with_symbol, get_waypoint_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
+from schemas.navigation import BasicWaypoint, System, get_system_with_symbol, get_waypoint_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
 from login import HEADERS, SYSTEM_BASE_URL, get
 
 

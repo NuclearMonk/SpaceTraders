@@ -1,7 +1,7 @@
 from asyncio import run
 from typing import Dict
 from ai.mining_ship import MinerShipController
-from models.ship import Ship, get_ship_list
+from schemas.ship import Ship, get_ship_list
 from ui.ui import SpaceTraders
 
 
