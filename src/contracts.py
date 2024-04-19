@@ -1,13 +1,12 @@
-from login import API_KEY
+from login import HEADERS,get, post
 from utils import print_json
-from requests import get, post
 import argparse
 
 CONTRACTS_BASE_URL = 'https://api.spacetraders.io/v2/my/contracts/'
 
 
 def get_contract_data():
-    headers = {"Authorization": f"Bearer {API_KEY}"}
+    headers = {"Authorization": f"Bearer {HEADERS}"}
     response = get(CONTRACTS_BASE_URL, headers=headers)
     if response.ok:
         return response.json()
@@ -16,7 +15,7 @@ def get_contract_data():
 
 
 def accept_contract(id):
-    headers = {"Authorization": f"Bearer {API_KEY}"}
+    headers = {"Authorization": f"Bearer {HEADERS}"}
     response = post(CONTRACTS_BASE_URL+id + "/accept", headers=headers)
     if response.ok:
         return response.json()

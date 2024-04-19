@@ -1,9 +1,9 @@
-from requests import post
-import json
+from requests_ratelimiter import LimiterSession
 from utils import print_json
 from pathlib import Path
 from os import path
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
+SYSTEM_BASE_URL = "https://api.spacetraders.io/v2/systems/"
 CREDENTIALS_PATH = Path("data/apikey")
 USERNAME = "shocsoares"
 FACTION = "VOID"
@@ -41,8 +41,13 @@ def register():
         print_json(data)
         print("REGISTER FAILED")
 
+
 if __name__ == "__main__":
     register()
 else:
-    API_KEY = get_api_key()
-    HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+    HEADERS = get_api_key()
+    HEADERS = {"Authorization": f"Bearer {HEADERS}"}
+    session = LimiterSession(per_second=2, burst=30)
+    get = session.get
+    post = session.post
+    patch = session.patch

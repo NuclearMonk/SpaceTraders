@@ -2,11 +2,10 @@ import argparse
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from requests import get
 
 from utils import print_json
-from waypoint import WaypointSymbol
-from login import HEADERS
+from navigation import BaseWaypoint, BasicWaypoint, System, get_system_with_symbol, get_waypoint_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
+from login import HEADERS, SYSTEM_BASE_URL, get
 
 
 class Good(BaseModel):
@@ -45,15 +44,20 @@ class Market(BaseModel):
     tradeGoods: Optional[List[MarketTradeGood]] = None
 
 
-def get_market(symbol: WaypointSymbol) -> Optional[Market]:
-    response = get(f"https://api.spacetraders.io/v2/systems/{
-                   symbol.system_string}/waypoints/{symbol.waypoint_string}/market", headers=HEADERS)
+def get_market(wp: BasicWaypoint) -> Optional[Market]:
+    response = get(f"{SYSTEM_BASE_URL}/{system_symbol_from_wp_symbol(wp.symbol)}/waypoints/{wp.symbol}/market", headers=HEADERS)
     if response.ok:
         js = response.json()
         print(js)
         return Market.model_validate(js["data"])
     else:
         return None
+
+def get_all_markets(system: System)-> List[Market]:
+    market_waypoints = system.get_filtered_waypoints("trait=MARKETPLACE")
+    markets = [get_market(waypoint) for waypoint in market_waypoints]
+    return markets
+
 
 
 if __name__ == "__main__":
@@ -62,7 +66,8 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--search")
     args = parser.parse_args()
     if args.symbol:
-        if market := get_market(WaypointSymbol(*WaypointSymbol.split_symbol(args.symbol))):
-            print(market.model_dump_json(indent=2))
-    else:
-        print("ERROR GETTING SYSTEM DATA")
+        if not is_system_symbol(args.symbol):
+            if market := get_market(get_waypoint_with_symbol(args.symbol)):
+                print(market.model_dump_json(indent=2))
+        else:
+            print_json(get_all_markets(get_system_with_symbol(args.symbol)))

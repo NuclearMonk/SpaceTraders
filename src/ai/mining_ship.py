@@ -2,30 +2,42 @@
 from asyncio import sleep
 from typing import List, override
 from ai.ship_controller import ShipController
-from navigation import WaypointSymbol, get_waypoint_with_symbol
+from navigation import BaseWaypoint, get_waypoint_with_symbol
 from ship import Ship, ShipNavStatus
+from survey import Survey
 
 
 class MinerShipController(ShipController):
 
-    def __init__(self, ship: Ship, mine_waypoint: WaypointSymbol, sell_waypoint: WaypointSymbol, keep: List[str]) -> None:
+    def __init__(self, ship: Ship, mine_waypoint: BaseWaypoint, sell_waypoint: BaseWaypoint, look_for: List[str]) -> None:
         super().__init__(ship)
         self.mine_waypoint = get_waypoint_with_symbol(mine_waypoint)
         self.sell_waypoint = get_waypoint_with_symbol(sell_waypoint)
-        self.keep = set(keep)
+        self.look_for = set(look_for)
 
     @override
     async def run(self):
         self.ship.log("Miner Ship AI Enabled")
+        surveys : List[Survey] = []
         while True:
             match self.ship.nav.status, self.ship.nav.waypointSymbol, self.ship.cooldown.time_remaining.total_seconds(), self.ship.cargo.capacity_remaining:
                 case ShipNavStatus.IN_TRANSIT, _, _, _:
                     await sleep(self.ship.nav.route.time_remaining.total_seconds())
                 case ShipNavStatus.IN_ORBIT, self.mine_waypoint.symbol, 0, c if c > 0:
-                    success, extraction = self.ship.extract()
-                    if success and extraction.yield_field.symbol not in self.keep:
-                        self.ship.jettison(
-                            extraction.yield_field.symbol, extraction.yield_field.units)
+                    if not surveys:
+                        success, surveys = self.ship.survey()
+                        sort_func = lambda x: x.rank_survey(self.look_for)
+                        surveys = sorted(filter(sort_func ,surveys), key = sort_func, reverse=True)
+                        self.ship.log(surveys)
+                    else:
+                        if survey := surveys[0]:
+                            if not survey.is_valid:
+                                surveys = []
+                                continue
+                        success, extraction = self.ship.extract(survey)
+                        if success and extraction.yield_field.symbol not in self.look_for:
+                            self.ship.jettison(
+                                extraction.yield_field.symbol, extraction.yield_field.units)
                 case ShipNavStatus.IN_ORBIT, self.mine_waypoint.symbol, t , c if c > 0:
                     await sleep(t)
                 case ShipNavStatus.IN_ORBIT, self.mine_waypoint.symbol, _, 0:

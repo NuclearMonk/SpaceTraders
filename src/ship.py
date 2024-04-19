@@ -8,7 +8,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 from login import HEADERS
 from market import Good, MarketTransaction
-from navigation import ShipNavRouteWaypoint, WaypointSymbol, get_waypoint_with_symbol
+from navigation import ShipNavRouteWaypoint, BaseWaypoint, get_waypoint_with_symbol
 from observable import Observable
 from survey import Survey
 from utils import error_wrap, format_time_ms, print_json, success_wrap, time_until, console
@@ -238,7 +238,7 @@ class Ship(BaseModel, Observable):
                 response.json(), indent=1)}", error=True)
             return False, None
 
-    def extract(self, survey=None) -> Tuple[bool, Optional[Extraction]]:
+    def extract(self, survey: Survey=None) -> Tuple[bool, Optional[Extraction]]:
         self.log(f"Attempting to Extract")
         if self.nav.status != ShipNavStatus.IN_ORBIT:
             self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
@@ -247,8 +247,11 @@ class Ship(BaseModel, Observable):
             self.log("Attempt Failed: Ship is ON COOLDOWN", error=True)
             return False, None
         if survey:
+            self.log(f"Using survey {survey.signature}")
+            self.log( survey.model_dump_json(indent=2))
+            self.log(survey.deposits)
             response = post(f"{SHIPS_BASE_URL}/{self.symbol}/extract",
-                            json=survey, headers=HEADERS)
+                            survey.model_dump_json(), headers=HEADERS)
         else:
             response = post(
                 f"{SHIPS_BASE_URL}/{self.symbol}/extract", headers=HEADERS)
@@ -392,7 +395,7 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False
 
-    async def navigate(self, destination: WaypointSymbol) -> bool:
+    async def navigate(self, destination: BaseWaypoint) -> bool:
         self.log(f"Attempting to Navigate To {destination.symbol}")
         if self.nav.status != ShipNavStatus.IN_ORBIT:
             self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
@@ -422,6 +425,11 @@ class Ship(BaseModel, Observable):
             self.log(f"Attempt Failed:\n{json.dumps(
                 js, indent=1)}", error=True)
             return False
+        
+    def negotiate_contract(self)->None:
+        response = post(f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
+        print(response.ok)
+        print_json(response.json())
 
 
 def get_ship_list() -> List[Ship]:
@@ -446,6 +454,7 @@ if __name__ == "__main__":
     list_parser = subparsers.add_parser("list")
     ship_parser.add_argument("id", type=str)
     ship_options = ship_parser.add_mutually_exclusive_group()
+    ship_options.add_argument("--negotiate", action="store_true")
     ship_options.add_argument("-o", "--orbit", action="store_true")
     ship_options.add_argument("-d", "--dock", action="store_true")
     ship_options.add_argument("-r", "--refuel", action="store_true")
@@ -482,6 +491,8 @@ if __name__ == "__main__":
                     ship.refuel()
                 elif args.jettison:
                     ship.jettison(args.jettison)
+                elif args.negotiate:
+                    ship.negotiate_contract()
                 else:
                     print(f"{args.id}: SHIP DATA")
                     print(ship.model_dump_json(indent=2))
