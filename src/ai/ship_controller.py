@@ -1,7 +1,7 @@
 
 
-from ship import Ship
-from utils import console
+from models.ship import Ship
+from utils.utils import console
 
 
 class ShipController():

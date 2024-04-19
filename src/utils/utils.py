@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, UTC
 from json import dumps
 from rich.console import Console
+
+
 console = Console(highlight=False)
 
 def print_json(json_dict):

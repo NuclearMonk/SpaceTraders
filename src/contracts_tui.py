@@ -1,5 +1,5 @@
 from login import HEADERS,get, post
-from utils import print_json
+from utils.utils import print_json
 import argparse
 
 CONTRACTS_BASE_URL = 'https://api.spacetraders.io/v2/my/contracts/'

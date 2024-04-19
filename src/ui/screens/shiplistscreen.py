@@ -2,9 +2,9 @@ from typing import Dict
 from textual.app import ComposeResult
 from textual.widgets import DataTable
 from textual.screen import Screen
-from screens.shipscreen import ShipScreen
-from ship import Ship, get_ship_list
-from utils import format_time_ms
+from ui.screens.shipscreen import ShipScreen
+from models.ship import Ship
+from utils.utils import format_time_ms
 
 
 class ShipListScreen(Screen):

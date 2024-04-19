@@ -1,10 +1,9 @@
-from typing import Dict, List, Type
+from typing import Dict, List
 from textual.app import App, ComposeResult
-from textual.driver import Driver
 from textual.widgets import Header, Footer
 from ai.ship_controller import ShipController
-from screens.shiplistscreen import ShipListScreen
-from ship import Ship
+from ui.screens.shiplistscreen import ShipListScreen
+from models.ship import Ship
 
 
 class SpaceTraders(App):

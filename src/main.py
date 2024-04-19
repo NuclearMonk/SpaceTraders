@@ -1,8 +1,8 @@
 from asyncio import run
 from typing import Dict
 from ai.mining_ship import MinerShipController
-from ship import Ship, get_ship_list
-from ui import SpaceTraders
+from models.ship import Ship, get_ship_list
+from ui.ui import SpaceTraders
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 from pydantic import BaseModel
 
-from utils import time_until
+from utils.utils import time_until
 
 
 class SurveyDeposit(BaseModel):

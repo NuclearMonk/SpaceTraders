@@ -1,7 +1,9 @@
 from requests_ratelimiter import LimiterSession
-from utils import print_json
+from utils.utils import print_json
 from pathlib import Path
 from os import path
+
+
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
 SYSTEM_BASE_URL = "https://api.spacetraders.io/v2/systems/"
 CREDENTIALS_PATH = Path("data/apikey")

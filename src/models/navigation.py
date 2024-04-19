@@ -6,7 +6,7 @@ from typing import List, Optional
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from login import HEADERS, SYSTEM_BASE_URL, get
 
-from utils import print_json
+from utils.utils import print_json
 
 
 class WaypointTrait(BaseModel):

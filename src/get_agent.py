@@ -1,5 +1,5 @@
 from login import HEADERS, get
-from utils import print_json
+from utils.utils import print_json
 
 
 AGENT_BASE_URL = 'https://api.spacetraders.io/v2/my/agent'
