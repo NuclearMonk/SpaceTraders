@@ -2,14 +2,14 @@
 from asyncio import sleep
 from typing import List, override
 from ai.ship_controller import ShipController
-from schemas.navigation import BaseWaypoint, get_waypoint_with_symbol
+from schemas.navigation import Waypoint, get_waypoint_with_symbol
 from schemas.ship import Ship, ShipNavStatus
 from schemas.survey import Survey
 
 
 class MinerShipController(ShipController):
 
-    def __init__(self, ship: Ship, mine_waypoint: BaseWaypoint, sell_waypoint: BaseWaypoint, look_for: List[str]) -> None:
+    def __init__(self, ship: Ship, mine_waypoint: Waypoint, sell_waypoint: Waypoint, look_for: List[str]) -> None:
         super().__init__(ship)
         self.mine_waypoint = get_waypoint_with_symbol(mine_waypoint)
         self.sell_waypoint = get_waypoint_with_symbol(sell_waypoint)

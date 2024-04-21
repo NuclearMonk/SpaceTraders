@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from utils.utils import print_json
-from schemas.navigation import BasicWaypoint, System, get_system_with_symbol, get_waypoint_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
+from schemas.navigation import Waypoint, System, get_system_with_symbol, get_waypoint_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
 from login import HEADERS, SYSTEM_BASE_URL, get
 
 
@@ -44,7 +44,7 @@ class Market(BaseModel):
     tradeGoods: Optional[List[MarketTradeGood]] = None
 
 
-def get_market(wp: BasicWaypoint) -> Optional[Market]:
+def get_market(wp: Waypoint) -> Optional[Market]:
     response = get(f"{SYSTEM_BASE_URL}/{system_symbol_from_wp_symbol(wp.symbol)}/waypoints/{wp.symbol}/market", headers=HEADERS)
     if response.ok:
         js = response.json()

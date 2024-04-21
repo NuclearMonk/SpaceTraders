@@ -1,4 +1,5 @@
 from requests_ratelimiter import LimiterSession
+from sqlalchemy import create_engine
 from utils.utils import print_json
 from pathlib import Path
 from os import path
@@ -47,9 +48,11 @@ def register():
 if __name__ == "__main__":
     register()
 else:
+    
+    engine =  create_engine('sqlite:///data/test.db')
     HEADERS = get_api_key()
     HEADERS = {"Authorization": f"Bearer {HEADERS}"}
-    session = LimiterSession(per_second=2, burst=30)
+    session = LimiterSession(per_second=2)
     get = session.get
     post = session.post
     patch = session.patch

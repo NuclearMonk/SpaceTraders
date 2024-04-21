@@ -1,12 +1,9 @@
-import argparse
-from asyncio import sleep
-from datetime import datetime
-import math
-from typing import List, Optional
-from pydantic import BaseModel, TypeAdapter, ValidationError
 from login import HEADERS, SYSTEM_BASE_URL, get
-
-from utils.utils import print_json
+from pydantic import BaseModel, TypeAdapter, ValidationError
+from typing import List, Optional, Self
+import math
+from datetime import datetime
+import argparse
 
 
 class WaypointTrait(BaseModel):
@@ -21,41 +18,31 @@ class WaypointModifier(BaseModel):
     description: str
 
 
-class BaseWaypoint(BaseModel):
-    symbol: str
-
-
 class WaypointFaction(BaseModel):
     symbol: str
 
 
 class WaypointChart(BaseModel):
-    waypointSymbol: Optional[str]
-    submittedBy: Optional[str]
-    submittedOn: Optional[datetime]
+    waypointSymbol: Optional[str] = None
+    submittedBy: Optional[str] = None
+    submittedOn: Optional[datetime] = None
 
-
-class BasicWaypoint(BaseWaypoint):
-    type: str
-    x: int
-    y: int
-
-
-class ShipNavRouteWaypoint(BasicWaypoint):
-    systemSymbol: str
-
-
-class SystemWaypoint(BasicWaypoint):
-    orbitals: List[BaseWaypoint]
+class Waypoint(BaseModel):
+    symbol: str
+    type: Optional[str] = None
+    x: Optional[int] = None
+    y: Optional[int] = None
+    faction: Optional[WaypointFaction] = None
+    traits: Optional[List[WaypointTrait]] = None
+    modifiers: Optional[List[WaypointModifier]] = None
+    orbitals: Optional[List[Self]] = None
     orbits: Optional[str] = None
+    chart: Optional[WaypointChart] = None
+    isUnderConstruction: Optional[bool] = None
 
-
-class Waypoint(SystemWaypoint):
-    faction: Optional[WaypointFaction]
-    traits: List[WaypointTrait]
-    modifiers: Optional[List[WaypointModifier]]
-    chart: Optional[WaypointChart]
-    isUnderConstruction: bool
+    @property
+    def systemSymbol(self) -> str:
+        return system_symbol_from_wp_symbol(self.symbol)
 
 
 class System(BaseModel):
@@ -64,12 +51,12 @@ class System(BaseModel):
     type: str
     x: int
     y: int
-    waypoints: List[SystemWaypoint]
+    waypoints: List[Waypoint]
     factions: List[WaypointFaction]
 
     def get_filtered_waypoints(self, query, limit=20) -> List[Waypoint]:
-        wps: list[SystemWaypoint] = []
-        ta = TypeAdapter(List[SystemWaypoint])
+        wps: list[Waypoint] = []
+        ta = TypeAdapter(List[Waypoint])
         current = 0
         m = float("inf")
         page = 1
@@ -101,17 +88,19 @@ def system_symbol_from_wp_symbol(symbol: str):
     return f"{sector}-{system}"
 
 
-def get_waypoint_with_symbol(symbol: str) -> Optional[SystemWaypoint]:
+def get_waypoint_with_symbol(symbol: str) -> Optional[Waypoint]:
     split_symbol = symbol.split("-")
     system_symbol = f"{split_symbol[0]}-{split_symbol[1]}"
     response = get(f"{SYSTEM_BASE_URL}/{system_symbol}/waypoints/{symbol}")
     if response.ok:
         js = response.json()
         try:
-            return SystemWaypoint.model_validate(js["data"])
+            return Waypoint.model_validate(js["data"])
         except ValidationError as e:
             print(e)
             return None
+    print(response)
+    return None
 
 
 def get_system_with_symbol(symbol: str) -> Optional[System]:
@@ -122,16 +111,16 @@ def get_system_with_symbol(symbol: str) -> Optional[System]:
     response = get(f"{SYSTEM_BASE_URL}/{system_symbol}")
     if response.ok:
         js = response.json()
-        print_json(js)
         try:
             return System.model_validate(js["data"])
         except ValidationError as e:
             print(e)
             return None
+    print(response)
     return None
 
 
-def distance_betweenWaypoints(A: BasicWaypoint, B: BasicWaypoint) -> float:
+def distance_betweenWaypoints(A: Waypoint, B: Waypoint) -> float:
     return math.sqrt((A.x-B.x)**2 + (A.y-B.y)**2)
 
 

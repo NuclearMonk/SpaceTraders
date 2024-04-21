@@ -8,7 +8,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 from login import HEADERS
 from schemas.market import Good, MarketTransaction
-from schemas.navigation import ShipNavRouteWaypoint, BaseWaypoint, get_waypoint_with_symbol
+from schemas.navigation import Waypoint, get_waypoint_with_symbol
 from utils.observable import Observable
 from schemas.survey import Survey
 from utils.utils import error_wrap, format_time_ms, print_json, success_wrap, time_until, console
@@ -55,8 +55,8 @@ class ShipCooldown(BaseModel):
 
 
 class ShipNavRoute(BaseModel):
-    destination: ShipNavRouteWaypoint
-    origin: ShipNavRouteWaypoint
+    destination: Waypoint
+    origin: Waypoint
     departureTime: datetime
     arrival: datetime
 
@@ -395,7 +395,7 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False
 
-    async def navigate(self, destination: BaseWaypoint) -> bool:
+    async def navigate(self, destination:Waypoint) -> bool:
         self.log(f"Attempting to Navigate To {destination.symbol}")
         if self.nav.status != ShipNavStatus.IN_ORBIT:
             self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)

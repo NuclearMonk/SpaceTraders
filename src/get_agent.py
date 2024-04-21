@@ -5,8 +5,7 @@ from utils.utils import print_json
 AGENT_BASE_URL = 'https://api.spacetraders.io/v2/my/agent'
 
 def get_agent_data():
-    headers = {"Authorization": f"Bearer {HEADERS}"}
-    response = get(AGENT_BASE_URL,headers=headers)
+    response = get(AGENT_BASE_URL,headers=HEADERS)
     if response.ok:
         return response.json()
     else:
