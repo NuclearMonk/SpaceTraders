@@ -4,8 +4,10 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 from utils.utils import print_json
-from schemas.navigation import Waypoint, System, get_system_with_symbol, get_waypoint_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
+from schemas.navigation import Waypoint, System, get_system_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
+from crud.waypoint import get_waypoint_with_symbol
 from login import HEADERS, SYSTEM_BASE_URL, get
+from crud.waypoint import get_waypoints_in_system
 
 
 class Good(BaseModel):
@@ -54,7 +56,7 @@ def get_market(wp: Waypoint) -> Optional[Market]:
         return None
 
 def get_all_markets(system: System)-> List[Market]:
-    market_waypoints = system.get_filtered_waypoints("trait=MARKETPLACE")
+    market_waypoints = get_waypoints_in_system(system.symbol, "MARKETPLACE")
     markets = [get_market(waypoint) for waypoint in market_waypoints]
     return markets
 

@@ -4,11 +4,11 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
 from typing import Callable, Dict, List, Optional, Tuple
-
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
+from crud.waypoint import get_waypoint_with_symbol
 from login import HEADERS
 from schemas.market import Good, MarketTransaction
-from schemas.navigation import Waypoint, get_waypoint_with_symbol
+from schemas.navigation import Waypoint
 from utils.observable import Observable
 from schemas.survey import Survey
 from utils.utils import error_wrap, format_time_ms, print_json, success_wrap, time_until, console

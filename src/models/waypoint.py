@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import Boolean, ForeignKey, Integer, Text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Table, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 # symbol x
 # type x
@@ -8,21 +8,52 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 # y x
 # orbitals x
 # orbit x
-# faction #
-# traits
-# modifiers
+# faction x
+# traits x
+# modifiers x
 # chart
-# isUnderConstruction
+# isUnderConstruction x
 
 
 class Base(DeclarativeBase):
     ...
 
-class WaypointTrait(Base):
-    __tablename__ = "waypoint_traits"
+
+waypoint_traits = Table(
+    "waypoint_traits",
+    Base.metadata,
+    Column("wp_symbol", ForeignKey("waypoints.symbol"),
+           primary_key=True, type_=Text(20)),
+    Column("trait_symbol", ForeignKey("traits.symbol"),
+           primary_key=True, type_=Text(20)),
+)
+
+waypoint_modifiers = Table(
+    "waypoint_modifiers",
+    Base.metadata,
+    Column("wp_symbol", ForeignKey("waypoints.symbol"),
+           primary_key=True, type_=Text(20)),
+    Column("modifier_symbol", ForeignKey("modifiers.symbol"),
+           primary_key=True, type_=Text(20)),
+)
+
+
+class ModifierModel(Base):
+    __tablename__ = "modifiers"
     symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
     name: Mapped[str] = mapped_column(Text(30))
     description: Mapped[str] = mapped_column(Text(500))
+    waypoints: Mapped[List["WaypointModel"]] = relationship(
+        secondary=waypoint_modifiers, back_populates="modifiers")
+
+
+class TraitModel(Base):
+    __tablename__ = "traits"
+    symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
+    name: Mapped[str] = mapped_column(Text(30))
+    description: Mapped[str] = mapped_column(Text(500))
+    waypoints: Mapped[List["WaypointModel"]] = relationship(
+        secondary=waypoint_traits, back_populates="traits")
 
 
 class WaypointModel(Base):
@@ -35,7 +66,12 @@ class WaypointModel(Base):
     isUnderConstruction: Mapped[Optional[bool]] = mapped_column(Boolean)
     parent_symbol: Mapped[Optional[str]] = mapped_column(
         Text(20), ForeignKey("waypoints.symbol"))
-    faction : Optional[Mapped[str]] = mapped_column(Text(20))
+    faction: Mapped[Optional[str]] = mapped_column(Text(20))
     orbits: Mapped["WaypointModel"] = relationship(back_populates="orbitals")
     orbitals: Mapped[List["WaypointModel"]] = relationship(
         back_populates="orbits", remote_side=[symbol], uselist=True)
+    traits: Mapped[List[TraitModel]] = relationship(
+        secondary=waypoint_traits, back_populates="waypoints")
+    modifiers: Mapped[List[ModifierModel]] = relationship(
+        secondary=waypoint_modifiers, back_populates="waypoints")
+    time_updated = Column(DateTime(timezone=False),server_default=func.now(), onupdate=func.now())

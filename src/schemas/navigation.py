@@ -4,6 +4,7 @@ from typing import List, Optional, Self
 import math
 from datetime import datetime
 import argparse
+from crud.waypoint import get_waypoint_with_symbol
 
 
 class WaypointTrait(BaseModel):
@@ -26,6 +27,7 @@ class WaypointChart(BaseModel):
     waypointSymbol: Optional[str] = None
     submittedBy: Optional[str] = None
     submittedOn: Optional[datetime] = None
+
 
 class Waypoint(BaseModel):
     symbol: str
@@ -86,21 +88,6 @@ def system_symbol_from_wp_symbol(symbol: str):
 
     sector, system, wp = symbol.split("-")
     return f"{sector}-{system}"
-
-
-def get_waypoint_with_symbol(symbol: str) -> Optional[Waypoint]:
-    split_symbol = symbol.split("-")
-    system_symbol = f"{split_symbol[0]}-{split_symbol[1]}"
-    response = get(f"{SYSTEM_BASE_URL}/{system_symbol}/waypoints/{symbol}")
-    if response.ok:
-        js = response.json()
-        try:
-            return Waypoint.model_validate(js["data"])
-        except ValidationError as e:
-            print(e)
-            return None
-    print(response)
-    return None
 
 
 def get_system_with_symbol(symbol: str) -> Optional[System]:
