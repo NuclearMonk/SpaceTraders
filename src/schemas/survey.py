@@ -1,9 +1,9 @@
 from collections import Counter
 from datetime import datetime, timedelta
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 
-from utils.utils import time_until
+from utils.utils import format_time_ms, time_until
 
 
 class SurveyDeposit(BaseModel):
@@ -15,6 +15,10 @@ class Survey(BaseModel):
     deposits : List[SurveyDeposit]
     expiration: datetime
     size : str
+
+    @field_serializer('expiration')
+    def custom_time_dump(self, expiration : datetime, _info):
+        return f"{datetime.strftime(expiration, "%Y-%m-%dT%H:%M:%S.%f")[:-3]}Z"
 
     @property
     def is_valid(self)->bool:

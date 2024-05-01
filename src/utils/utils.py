@@ -4,10 +4,16 @@ from rich.console import Console
 
 
 console = Console(highlight=False)
-
 def print_json(json_dict):
     print(dumps(json_dict, indent=2))
 
+def utcnow():
+    return datetime.now(UTC)
+
+
+def system_symbol_from_wp_symbol(symbol: str):
+    sector, system, wp = symbol.split("-")
+    return f"{sector}-{system}"
 
 def clamp(n, m, M):
     if n < m:
@@ -39,4 +45,4 @@ def format_time_ms(time: datetime) -> str:
 
 
 def time_until(t: datetime) -> timedelta:
-    return max(t - datetime.now(UTC), timedelta(0))
+    return max(t - utcnow(), timedelta(0))

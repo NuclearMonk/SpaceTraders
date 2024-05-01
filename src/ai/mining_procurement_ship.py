@@ -2,22 +2,24 @@
 from asyncio import sleep
 from typing import List, override
 from ai.ship_controller import ShipController
+from schemas.contract import Contract
 from schemas.navigation import Waypoint
 from schemas.ship import Ship, ShipNavStatus
 from schemas.survey import Survey
 from crud.waypoint import get_waypoint_with_symbol
 
-class MinerShipController(ShipController):
+class ProcurementMinerController(ShipController):
 
-    def __init__(self, ship: Ship, mine_waypoint: Waypoint, sell_waypoint: Waypoint, look_for: List[str]) -> None:
+    def __init__(self, ship: Ship, mine_waypoint: Waypoint, contract: Contract) -> None:
         super().__init__(ship)
         self.mine_waypoint = get_waypoint_with_symbol(mine_waypoint)
-        self.sell_waypoint = get_waypoint_with_symbol(sell_waypoint)
-        self.look_for = set(look_for)
+        self.delivery_waypoint = get_waypoint_with_symbol(contract.terms.deliver[0].destinationSymbol)
+        self.look_for = set([good.tradeSymbol for good in contract.terms.deliver])
+        self.contract = contract
 
     @override
     async def run(self):
-        self.ship.log("Miner Ship AI Enabled")
+        self.ship.log("Contract Fulfillment Miner Ship AI Enabled")
         surveys : List[Survey] = []
         while True:
             match self.ship.nav.status, self.ship.nav.waypointSymbol, self.ship.cooldown.time_remaining.total_seconds(), self.ship.cargo.capacity_remaining:
@@ -27,9 +29,7 @@ class MinerShipController(ShipController):
                     if not surveys:
                         success, surveys = self.ship.survey()
                         sort_func = lambda x: x.rank_survey(self.look_for)
-                        surveys = list(filter(sort_func ,surveys))
-                        if surveys:
-                            surveys.sort(key = sort_func, reverse=True)
+                        surveys = sorted(filter(sort_func ,surveys), key = sort_func, reverse=True)
                         self.ship.log(surveys)
                     else:
                         if survey := surveys[0]:
@@ -43,17 +43,17 @@ class MinerShipController(ShipController):
                 case ShipNavStatus.IN_ORBIT, self.mine_waypoint.symbol, t , c if c > 0:
                     await sleep(t)
                 case ShipNavStatus.IN_ORBIT, self.mine_waypoint.symbol, _, 0:
-                    await self.ship.navigate(self.sell_waypoint)
-                case ShipNavStatus.IN_ORBIT, self.sell_waypoint.symbol, _, c if c > 0:
+                    await self.ship.navigate(self.delivery_waypoint)
+                case ShipNavStatus.IN_ORBIT, self.delivery_waypoint.symbol, _, c if c > 0:
                     await self.ship.navigate(self.mine_waypoint)
 
-                case ShipNavStatus.IN_ORBIT, self.sell_waypoint.symbol, _, 0:
+                case ShipNavStatus.IN_ORBIT, self.delivery_waypoint.symbol, _, 0:
                     self.ship.dock()
-                case ShipNavStatus.DOCKED, self.sell_waypoint.symbol, _, 0:
-                    good_names = list(self.ship.cargo.items().keys())
-                    for good in good_names:
-                        self.ship.sell(good)
-                case ShipNavStatus.DOCKED, self.sell_waypoint.symbol, _, c if c > 0:
+                case ShipNavStatus.DOCKED, self.delivery_waypoint.symbol, _, 0:
+                    for good_name, units in self.ship.cargo.items().items():
+                        self.contract = self.ship.deliver_to_contract(self.contract.id, good_name, units)
+
+                case ShipNavStatus.DOCKED, self.delivery_waypoint.symbol, _, c if c > 0:
                     self.ship.refuel()
                     self.ship.orbit()
                 case _:

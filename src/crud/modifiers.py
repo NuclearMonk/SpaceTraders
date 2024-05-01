@@ -7,17 +7,16 @@ def get_modifier(symbol: str):
     return _record_to_schema(_get_modifier(symbol))
 
 
-def store_modifier(trait: WaypointModifier) -> ModifierModel:
+def store_modifier(trait: WaypointModifier, session: Session) -> ModifierModel:
     if t := _get_modifier(trait.symbol):
         return t
     t = ModifierModel()
     t.symbol = trait.symbol
     t.name = trait.name
     t.description = trait.description
-    with Session(engine) as session:
-        session.add(t)
-        session.commit()
-        return t
+    session.add(t)
+    session.commit()
+    return t
 
 
 def _get_modifier(symbol: str):

@@ -7,6 +7,7 @@ from os import path
 
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
 SYSTEM_BASE_URL = "https://api.spacetraders.io/v2/systems/"
+CONTRACTS_BASE_URL = "https://api.spacetraders.io/v2/my/contracts/"
 CREDENTIALS_PATH = Path("data/apikey")
 USERNAME = "shocsoares"
 FACTION = "VOID"
@@ -45,14 +46,14 @@ def register():
         print("REGISTER FAILED")
 
 
+session = LimiterSession(per_second=2)
+get = session.get
+post = session.post
+patch = session.patch
+
 if __name__ == "__main__":
     register()
 else:
-    
     engine =  create_engine('sqlite:///data/test.db')
     HEADERS = get_api_key()
     HEADERS = {"Authorization": f"Bearer {HEADERS}"}
-    session = LimiterSession(per_second=2)
-    get = session.get
-    post = session.post
-    patch = session.patch

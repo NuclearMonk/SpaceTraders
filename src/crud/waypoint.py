@@ -1,24 +1,47 @@
+
+from datetime import UTC, timedelta
 from typing import List, Optional
 from pydantic import ValidationError
+from sqlalchemy import select
 
 from login import SYSTEM_BASE_URL, engine, get
 from sqlalchemy.orm import Session
 from models.waypoint import TraitModel, WaypointModel
+from utils.utils import utcnow
+
+from schemas.navigation import Waypoint, WaypointFaction
+from crud import get_modifier, store_modifier, get_trait, store_trait
+
+STALE_TIME = timedelta(minutes=15)
+
 
 
 def get_waypoint_with_symbol(symbol: str):
-    if wp := _get_waypoint(symbol):
-        print(f"from cache {symbol}")
-        return wp
-    else:
-        print(f"getting fresh {symbol}")
-        wp = _get_waypoint_with_symbol(symbol)
-        print(wp)
-        _store_waypoint(wp)
+    with Session(engine) as session:
+        if wp := _get_waypoint_from_db(symbol, session):
+            if utcnow() - wp.time_updated_utc < STALE_TIME:
+                print("fresh from cache")
+                return _record_to_schema(wp)
+            else:
+                print("updating cache")
+                fresh_wp = _get_waypoint_from_server(symbol)
+                return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
+        print("added new cache row")
+        fresh_wp = _get_waypoint_from_server(symbol)
+        wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
         return wp
 
 
-def _get_waypoint_with_symbol(symbol: str) -> Optional["Waypoint"]:
+def update_waypoint_cache(wp: Waypoint) -> Waypoint:
+    with Session(engine) as session:
+        if db_wp := _get_waypoint_from_db(wp.symbol, session):
+            return _record_to_schema(_update_waypoint_in_db(db_wp, wp, session))
+        fresh_wp = _get_waypoint_from_server(wp.symbol)
+        wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
+        return wp
+
+
+def _get_waypoint_from_server(symbol: str) -> Optional[Waypoint]:
     split_symbol = symbol.split("-")
     system_symbol = f"{split_symbol[0]}-{split_symbol[1]}"
     response = get(f"{SYSTEM_BASE_URL}/{system_symbol}/waypoints/{symbol}")
@@ -33,7 +56,30 @@ def _get_waypoint_with_symbol(symbol: str) -> Optional["Waypoint"]:
     return None
 
 
-def _store_waypoint(wp: "Waypoint"):
+def _update_waypoint_in_db(db_wp: WaypointModel, wp: Waypoint, session: Session) -> WaypointModel:
+    if wp.type:
+        db_wp.wp_type = wp.type
+    if wp.systemSymbol:
+        db_wp.systemSymbol = wp.systemSymbol
+    if wp.x:
+        db_wp.x = wp.x
+    if wp.y:
+        db_wp.y = wp.y
+    if wp.orbits:
+        db_wp.parent_symbol = wp.orbits
+    if wp.faction:
+        db_wp.faction = wp.faction.symbol
+    if wp.traits is not None:
+        db_wp.traits = [store_trait(trait, session) for trait in wp.traits]
+    if wp.modifiers is not None:
+        db_wp.modifiers = [store_modifier(modifier)
+                           for modifier in wp.modifiers]
+    db_wp.time_updated = utcnow()
+    session.commit()
+    return db_wp
+
+
+def _store_waypoint_in_db(wp: Waypoint, session: Session)->WaypointModel:
     added_wp = WaypointModel()
     added_wp.symbol = wp.symbol
     added_wp.wp_type = wp.type
@@ -42,16 +88,15 @@ def _store_waypoint(wp: "Waypoint"):
     added_wp.y = wp.y
     added_wp.parent_symbol = wp.orbits
     added_wp.faction = wp.faction.symbol
-    for trait in wp.traits:
-        added_wp.traits.append(store_trait(trait))
-    for modifier in wp.modifiers:
-        added_wp.modifiers.append(store_modifier(modifier))
-    with Session(engine) as session:
-        session.add(added_wp)
-        session.commit()
+    added_wp.traits = [store_trait(trait, session) for trait in wp.traits]
+    added_wp.modifiers = [store_modifier(modifier, session)
+                          for modifier in wp.modifiers]
+    session.add(added_wp)
+    session.commit()
+    return added_wp
 
 
-def _record_to_schema(wp: WaypointModel) -> "Waypoint":
+def _record_to_schema(wp: WaypointModel) -> Waypoint:
     if not wp:
         return None
     return Waypoint(
@@ -68,22 +113,16 @@ def _record_to_schema(wp: WaypointModel) -> "Waypoint":
     )
 
 
-def get_waypoints_in_system(system_symbol: str, trait_symbol: Optional[str] = None) -> List["Waypoint"]:
+def get_waypoints_in_system(system_symbol: str, trait_symbol: Optional[str] = None) -> List[Waypoint]:
     with Session(engine) as session:
         if trait_symbol:
-            print(trait_symbol)
-            return [_record_to_schema(t) for t in session.query(WaypointModel).filter(
-                WaypointModel.systemSymbol == system_symbol,
-                WaypointModel.traits.any(TraitModel.symbol == trait_symbol))]
-        return [_record_to_schema(t) for t in session.query(WaypointModel).filter(
-            WaypointModel.systemSymbol == system_symbol)]
+            stmt = select(WaypointModel).where(WaypointModel.systemSymbol == system_symbol,
+                                               WaypointModel.traits.any(TraitModel.symbol == trait_symbol))
+        else:
+            stmt = select(WaypointModel).where(
+                WaypointModel.systemSymbol == system_symbol)
+        return [_record_to_schema(t) for t in session.scalars(stmt).all()]
 
 
-def _get_waypoint(symbol: str):
-    with Session(engine) as session:
-        return _record_to_schema(session.query(WaypointModel).filter(WaypointModel.symbol == symbol).first())
-
-
-from crud.modifiers import get_modifier, store_modifier
-from schemas.navigation import Waypoint, WaypointFaction
-from crud.traits import get_trait, store_trait
+def _get_waypoint_from_db(symbol: str, session):
+    return session.scalars(select(WaypointModel).where(WaypointModel.symbol == symbol)).first()

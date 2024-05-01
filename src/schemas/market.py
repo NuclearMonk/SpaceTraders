@@ -1,13 +1,8 @@
-import argparse
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-from utils.utils import print_json
-from schemas.navigation import Waypoint, System, get_system_with_symbol, is_system_symbol, system_symbol_from_wp_symbol
-from crud.waypoint import get_waypoint_with_symbol
-from login import HEADERS, SYSTEM_BASE_URL, get
-from crud.waypoint import get_waypoints_in_system
+
 
 
 class Good(BaseModel):
@@ -46,30 +41,18 @@ class Market(BaseModel):
     tradeGoods: Optional[List[MarketTradeGood]] = None
 
 
-def get_market(wp: Waypoint) -> Optional[Market]:
-    response = get(f"{SYSTEM_BASE_URL}/{system_symbol_from_wp_symbol(wp.symbol)}/waypoints/{wp.symbol}/market", headers=HEADERS)
-    if response.ok:
-        js = response.json()
-        print(js)
-        return Market.model_validate(js["data"])
-    else:
-        return None
-
-def get_all_markets(system: System)-> List[Market]:
-    market_waypoints = get_waypoints_in_system(system.symbol, "MARKETPLACE")
-    markets = [get_market(waypoint) for waypoint in market_waypoints]
-    return markets
 
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("symbol")
-    parser.add_argument("-s", "--search")
-    args = parser.parse_args()
-    if args.symbol:
-        if not is_system_symbol(args.symbol):
-            if market := get_market(get_waypoint_with_symbol(args.symbol)):
-                print(market.model_dump_json(indent=2))
-        else:
-            print_json(get_all_markets(get_system_with_symbol(args.symbol)))
+
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("symbol")
+#     parser.add_argument("-s", "--search")
+#     args = parser.parse_args()
+#     if args.symbol:
+#         if not is_system_symbol(args.symbol):
+#             if market := get_market(get_waypoint_with_symbol(args.symbol)):
+#                 print(market.model_dump_json(indent=2))
+#         else:
+#             print_json(get_all_markets(get_system_with_symbol(args.symbol)))

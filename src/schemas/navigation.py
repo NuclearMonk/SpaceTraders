@@ -3,8 +3,8 @@ from pydantic import BaseModel, TypeAdapter, ValidationError
 from typing import List, Optional, Self
 import math
 from datetime import datetime
-import argparse
-from crud.waypoint import get_waypoint_with_symbol
+
+from utils.utils import system_symbol_from_wp_symbol
 
 
 class WaypointTrait(BaseModel):
@@ -45,6 +45,9 @@ class Waypoint(BaseModel):
     @property
     def systemSymbol(self) -> str:
         return system_symbol_from_wp_symbol(self.symbol)
+    
+    def has_trait(self, trait_symbol:str)-> bool:
+        return trait_symbol in [trait.symbol for trait in self.traits]
 
 
 class System(BaseModel):
@@ -84,12 +87,6 @@ def split_symbol(symbol: str):
     return symbol.split("-")
 
 
-def system_symbol_from_wp_symbol(symbol: str):
-
-    sector, system, wp = symbol.split("-")
-    return f"{sector}-{system}"
-
-
 def get_system_with_symbol(symbol: str) -> Optional[System]:
     if is_system_symbol(symbol):
         system_symbol = symbol
@@ -111,22 +108,22 @@ def distance_betweenWaypoints(A: Waypoint, B: Waypoint) -> float:
     return math.sqrt((A.x-B.x)**2 + (A.y-B.y)**2)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("symbol")
-    parser.add_argument("-s", "--search")
-    args = parser.parse_args()
-    if args.symbol:
-        nav_point = get_waypoint_with_symbol(args.symbol)
-        system = get_system_with_symbol(args.symbol)
-    if args.search:
-        if wps := system.get_filtered_waypoints(args.search):
-            wps.sort(key=lambda x: distance_betweenWaypoints(nav_point, x))
-            for d in wps:
-                print(d.symbol, d.x, d.y, distance_betweenWaypoints(nav_point, d))
-        else:
-            "ERROR GETTING SYSTEM DATA"
-    elif system:
-        print(system.model_dump_json(indent=2))
-    else:
-        "ERROR GETTING SYSTEM DATA"
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("symbol")
+#     parser.add_argument("-s", "--search")
+#     args = parser.parse_args()
+#     if args.symbol:
+#         nav_point = get_waypoint_with_symbol(args.symbol)
+#         system = get_system_with_symbol(args.symbol)
+#     if args.search:
+#         if wps := system.get_filtered_waypoints(args.search):
+#             wps.sort(key=lambda x: distance_betweenWaypoints(nav_point, x))
+#             for d in wps:
+#                 print(d.symbol, d.x, d.y, distance_betweenWaypoints(nav_point, d))
+#         else:
+#             "ERROR GETTING SYSTEM DATA"
+#     elif system:
+#         print(system.model_dump_json(indent=2))
+#     else:
+#         "ERROR GETTING SYSTEM DATA"
