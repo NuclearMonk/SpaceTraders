@@ -54,6 +54,7 @@ class MarketModel(Base):
     __tablename__ = "markets"
     symbol: Mapped[str] = mapped_column(
         Text(20), ForeignKey(WaypointModel.symbol), primary_key=True)
+    waypoint: Mapped[WaypointModel] = relationship()
     exports: Mapped[List[TradeGoodModel]] = relationship(
         secondary=market_exports, back_populates="exporters")
     imports: Mapped[List[TradeGoodModel]] = relationship(
