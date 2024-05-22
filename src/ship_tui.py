@@ -23,9 +23,10 @@ if __name__ == "__main__":
     ship_options.add_argument("-d", "--dock", action="store_true")
     ship_options.add_argument("-r", "--refuel", action="store_true")
     ship_options.add_argument("-n", "--navigate", type=str)
+    ship_options.add_argument("--route", type=str)
     ship_options.add_argument("-p", "--patch_navigation",
                               type=str, choices=["DRIFT", "STEALTH", "CRUISE", "BURN"])
-    ship_options.add_argument("-j", "--jettison", type=str)
+    ship_options.add_argument("-j", "--jettison", type=str, nargs=2)
     ship_options.add_argument("--sell", type=str)
     ship_options.add_argument("--purchase", type=str, nargs=2)
     extract_options = ship_options.add_argument_group()
@@ -46,6 +47,8 @@ if __name__ == "__main__":
                     ship.dock()
                 elif args.navigate:
                     asyncio.run(ship.navigate(get_waypoint_with_symbol(args.navigate)))
+                elif args.route:
+                    asyncio.run(ship.route_navigate(get_waypoint_with_symbol(args.route)))
                 elif args.patch_navigation:
                     ship.change_flight_mode(
                         ShipNavFlightMode(args.patch_navigation))
@@ -56,7 +59,7 @@ if __name__ == "__main__":
                 elif args.refuel:
                     ship.refuel()
                 elif args.jettison:
-                    ship.jettison(args.jettison)
+                    ship.jettison(args.jettison[0], int(args.jettison[1]))
                 elif args.sell:
                     ship.sell(args.sell)
                 elif args.purchase:

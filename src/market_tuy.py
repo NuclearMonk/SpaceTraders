@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from crud.market import get_markets_in_system, get_markets_exchanging, get_markets_exporting, get_markets_importing
 from crud.waypoint import get_waypoint_with_symbol
-from schemas.navigation import distance_betweenWaypoints
+from schemas.navigation import distance_between_waypoints
 
 
 if __name__ == "__main__":
@@ -32,13 +32,13 @@ if __name__ == "__main__":
 
     if args.distance:
         start_point = get_waypoint_with_symbol(args.distance)
-        results.sort(key=lambda x: distance_betweenWaypoints(
+        results.sort(key=lambda x: distance_between_waypoints(
             start_point, get_waypoint_with_symbol(x.symbol)))
 
     for result in results:
         if args.distance:
             wp = get_waypoint_with_symbol(result.symbol)
-            print(f"{wp.symbol} {wp.x} {wp.y} {distance_betweenWaypoints(
+            print(f"{wp.symbol} {wp.x} {wp.y} {distance_between_waypoints(
                 start_point, wp)}")
         else:
             print(f"{result.symbol}")

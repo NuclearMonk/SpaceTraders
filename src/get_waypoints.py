@@ -5,7 +5,7 @@ import argparse
 
 from crud import get_waypoint_with_symbol, get_waypoints_in_system
 from crud.market import get_market_with_symbol
-from schemas.navigation import Waypoint, distance_betweenWaypoints
+from schemas.navigation import Waypoint, distance_between_waypoints
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -20,9 +20,9 @@ if __name__ == "__main__":
             print(get_market_with_symbol(start_point.symbol).model_dump_json(indent=2))
     if args.search == "MARKETPLACE":
         if wps := get_waypoints_in_system(start_point.systemSymbol, "MARKETPLACE"):
-            wps.sort(key=lambda x: distance_betweenWaypoints(start_point, x))
+            wps.sort(key=lambda x: distance_between_waypoints(start_point, x))
             for wp in wps:
-                print(wp.symbol, wp.x, wp.y, distance_betweenWaypoints(start_point, wp))
+                print(wp.symbol, wp.x, wp.y, distance_between_waypoints(start_point, wp))
                 market = get_market_with_symbol(wp.symbol)
                 for imp in market.imports:
                     print(f"<- {imp.name}")
@@ -34,9 +34,9 @@ if __name__ == "__main__":
             "ERROR GETTING SYSTEM DATA"
     elif args.search:
         if wps := get_waypoints_in_system(start_point.systemSymbol):
-            wps.sort(key=lambda x: distance_betweenWaypoints(start_point, x))
+            wps.sort(key=lambda x: distance_between_waypoints(start_point, x))
             for wp in wps:
-                print(wp.symbol, wp.x, wp.y, distance_betweenWaypoints(start_point, wp))
+                print(wp.symbol, wp.x, wp.y, distance_between_waypoints(start_point, wp))
         else:
             "ERROR GETTING SYSTEM DATA"
     else:
