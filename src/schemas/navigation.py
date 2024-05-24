@@ -47,7 +47,10 @@ class Waypoint(BaseModel):
         return system_symbol_from_wp_symbol(self.symbol)
     
     def has_trait(self, trait_symbol:str)-> bool:
-        return trait_symbol in [trait.symbol for trait in self.traits]
+        return trait_symbol in set(trait.symbol for trait in self.traits)
+
+    def distance_to(self, other: Self)-> float:
+        return math.sqrt((self.x-other.x)**2 + (self.y-other.y)**2)
 
 
 class System(BaseModel):

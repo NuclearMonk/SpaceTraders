@@ -21,33 +21,27 @@ class PathFindingWaypoint:
         self.has_marketplace = has_marketplace
         self.nearest_market_distance = nearest_market_distance
 
-    def __str__(self) -> str:
-        return f"{self.symbol} ({self.x},{self.y}) {self.nearest_market_distance}"
-
-    def __repr__(self) -> str:
-        return f"<PathfindingWaypoint:{str(self)}>"
-
 
 def fuel_cost(A: PathFindingWaypoint, B: PathFindingWaypoint):
-    if (x := round(sqrt((A.x-B.x)**2 + (A.y-B.y)**2))) != 0:
-        return  x
-    return 1
+    if A == B:
+        return 0
+    x = round(sqrt((A.x-B.x)**2 + (A.y-B.y)**2))
+    if x == 0:
+        return 1
+    return x
 
 
-def create_graph(waypoints: List[Waypoint]):
+def create_graph(waypoints: List[Waypoint])-> Dict[str, PathFindingWaypoint]:
     wps = {wp.symbol: PathFindingWaypoint(
         wp.symbol, wp.x, wp.y, wp.has_trait("MARKETPLACE")) for wp in waypoints}
     markets = [v for v in wps.values() if v.has_marketplace]
-    for k, v in wps.items():
-        if v.has_marketplace:
-            v.nearest_market_distance = 0
-        else:
-            markets.sort(key=lambda x: fuel_cost(v, x))
-            v.nearest_market_distance = fuel_cost(v, markets[0])
+    for v in wps.values():
+        markets.sort(key=lambda x: fuel_cost(v, x))
+        v.nearest_market_distance = fuel_cost(v, markets[0])
     return wps
 
 
-def dijkstra_with_fuel(start: str, destination: str, waypoints: List[Waypoint], max_fuel:int, starting_fuel: int) -> Optional[List[Waypoint]]:
+def dijkstra_with_fuel(start: str, destination: str, waypoints: List[Waypoint], max_fuel: int, starting_fuel: int) -> Optional[List[Waypoint]]:
     distances = {}
     previous = {}
     fuel = {}
@@ -72,30 +66,33 @@ def dijkstra_with_fuel(start: str, destination: str, waypoints: List[Waypoint], 
                 continue
             if neighbor.symbol not in distances:  # if we havent visited this neighbour yet
                 # check if we can travel to it
-                if fuel_cost(wps[symbol], neighbor)< fuel_remaining:
+                if fuel_cost(wps[symbol], neighbor) < fuel_remaining:
                     if neighbor.has_marketplace:  # then we refuel on arrival making current fuel = max_fuel
                         heappush(
                             heap, (dist + fuel_cost(wps[symbol], neighbor), max_fuel, neighbor.symbol, symbol, True))
                     # and if we aint gonna be stranded afterwards
-                    elif neighbor.nearest_market_distance<= fuel_remaining - fuel_cost(
-                            wps[symbol], neighbor): 
-                        #otherwise, we consume some fuel instead and travel to it
+                    elif neighbor.nearest_market_distance <= fuel_remaining - fuel_cost(
+                            wps[symbol], neighbor):
+                        # otherwise, we consume some fuel instead and travel to it
                         heappush(heap, (dist + fuel_cost(wps[symbol], neighbor), fuel_remaining - fuel_cost(
                             wps[symbol], neighbor), neighbor.symbol, symbol, False))
 
     return previous, distances, fuel
 
-def calculate_route(start:str, destination:str, max_fuel:int, starting_fuel:int)-> Optional[List[str]]:
+
+def calculate_route(start: str, destination: str, max_fuel: int, starting_fuel: int) -> Optional[List[str]]:
     start_system = system_symbol_from_wp_symbol(start)
     destination_system = system_symbol_from_wp_symbol(destination)
     if start_system == destination_system:
         waypoints = get_waypoints_in_system(start_system)
-        previous, distances, refuel = dijkstra_with_fuel(start, destination, waypoints, max_fuel, starting_fuel)
+        previous, distances, refuel = dijkstra_with_fuel(
+            start, destination, waypoints, max_fuel, starting_fuel)
         if destination in previous:
             current = destination
             route = []
             while current != None:
-                route.append((get_waypoint_with_symbol(current), refuel[current]))
+                route.append(
+                    (get_waypoint_with_symbol(current), refuel[current]))
                 current = previous[current]
             route.reverse()
     return route

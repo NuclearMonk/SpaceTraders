@@ -5,7 +5,7 @@ from typing import Any, Coroutine, override
 from crud.market import get_markets_exporting
 from crud.waypoint import get_waypoint_with_symbol
 from schemas.contract import Contract
-from schemas.navigation import Waypoint, distance_between_waypoints
+from schemas.navigation import Waypoint
 from schemas.ship import Ship, ShipNavStatus
 
 
@@ -63,8 +63,7 @@ class FulfillProcurementContract(WorkOrder):
         markets = get_markets_exporting(self.good.tradeSymbol)
         if not markets:
             return False
-        markets.sort(key=lambda x: distance_between_waypoints(
-            self.delivery_waypoint, get_waypoint_with_symbol(x.symbol)))
+        markets.sort(key=lambda x: self.delivery_waypoint.distance_to(get_waypoint_with_symbol(x.symbol)))
         self.purchase_waypoint = markets[0]
         self.units_to_deliver = self.good.unitsRequired - self.good.unitsFulfilled
         if in_cargo := self.ship.cargo.items().get(self.good.tradeSymbol):
