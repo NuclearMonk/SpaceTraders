@@ -20,6 +20,7 @@ class ProcurementMinerController(ShipController):
     @override
     async def run(self):
         self.ship.log("Contract Fulfillment Miner Ship AI Enabled")
+        self.busy = True
         surveys : List[Survey] = []
         while True:
             match self.ship.nav.status, self.ship.nav.waypointSymbol, self.ship.cooldown.time_remaining.total_seconds(), self.ship.cargo.capacity_remaining:

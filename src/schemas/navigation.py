@@ -106,24 +106,3 @@ def get_system_with_symbol(symbol: str) -> Optional[System]:
 
 def distance_between_waypoints(A: Waypoint, B: Waypoint) -> float:
     return math.sqrt((A.x-B.x)**2 + (A.y-B.y)**2)
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("symbol")
-#     parser.add_argument("-s", "--search")
-#     args = parser.parse_args()
-#     if args.symbol:
-#         nav_point = get_waypoint_with_symbol(args.symbol)
-#         system = get_system_with_symbol(args.symbol)
-#     if args.search:
-#         if wps := system.get_filtered_waypoints(args.search):
-#             wps.sort(key=lambda x: distance_betweenWaypoints(nav_point, x))
-#             for d in wps:
-#                 print(d.symbol, d.x, d.y, distance_betweenWaypoints(nav_point, d))
-#         else:
-#             "ERROR GETTING SYSTEM DATA"
-#     elif system:
-#         print(system.model_dump_json(indent=2))
-#     else:
-#         "ERROR GETTING SYSTEM DATA"

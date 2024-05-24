@@ -1,4 +1,5 @@
 from login import CONTRACTS_BASE_URL, HEADERS,get, post
+from schemas.contract import get_all_contracts, get_open_contracts
 from utils.utils import print_json
 import argparse
 
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--accept")
     parser.add_argument("-f", "--fulfill")
+    parser.add_argument("-o", "--open", action="store_true")
     args = parser.parse_args()
     if args.accept:
         print(f"Accepting contract: {args.accept}")
@@ -38,5 +40,9 @@ if __name__ == "__main__":
     if args.fulfill:
         print(f"Fulfilling contract: {args.fulfill}")
         print_json(fulfill_contract(args.fulfill))
+    if args.open:
+        for contract in get_open_contracts():
+            print(contract.model_dump_json(indent=2))       
     else:
-        print_json(get_contract_data())
+        for contract in get_all_contracts():
+            print(contract.model_dump_json(indent=2))

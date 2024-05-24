@@ -16,8 +16,9 @@ class MinerShipController(ShipController):
         self.look_for = set(look_for)
 
     @override
-    async def run(self):
+    async def run(self) -> bool:
         self.ship.log("Miner Ship AI Enabled")
+        self.busy = True
         surveys : List[Survey] = []
         while True:
             match self.ship.nav.status, self.ship.nav.waypointSymbol, self.ship.cooldown.time_remaining.total_seconds(), self.ship.cargo.capacity_remaining:
@@ -59,4 +60,4 @@ class MinerShipController(ShipController):
                 case _:
                     print("ERROR")
                     print(self.ship.model_dump_json(indent=2))
-                    return
+                    return False

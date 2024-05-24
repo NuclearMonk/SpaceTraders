@@ -29,7 +29,7 @@ class PathFindingWaypoint:
 
 
 def fuel_cost(A: PathFindingWaypoint, B: PathFindingWaypoint):
-    if x := round(sqrt((A.x-B.x)**2 + (A.y-B.y)**2)) != 0:
+    if (x := round(sqrt((A.x-B.x)**2 + (A.y-B.y)**2))) != 0:
         return  x
     return 1
 

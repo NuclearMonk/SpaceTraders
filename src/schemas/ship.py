@@ -320,33 +320,39 @@ class Ship(BaseModel, Observable):
         if units == -1:
             units = self.cargo.capacity_remaining
         self.log(f"Attempting To PURCHASE {units} Units of {good_symbol}")
-        payload = {"symbol": good_symbol,
-                   "units": units}
+
         if self.nav.status != ShipNavStatus.DOCKED:
             self.log("Attempt Failed: Ship is NOT DOCKED", error=True)
             return False
-        response = post(f"{SHIPS_BASE_URL}/{self.symbol}/purchase",
-                        json=payload, headers=HEADERS)
-        js = response.json()
-        if response.ok:
-            try:
-                new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
-                transaction = MarketTransaction.model_validate(
-                    js["data"]["transaction"])
-                self.cargo = new_cargo
-                self.log(js["data"]["transaction"])
-                self.log("Purchase Successful", success=True)
-                self.update()
-                return True
-            except ValidationError as e:
-                self.log(f"Bad RESPONSE: {
-                         json.dumps(js, indent=1)}", error=True)
-                self.log(e)
+        units_left = units
+        while units_left > 0:
+            units_to_purchase = units_left if units_left < 20 else 20
+            units_left-= units_to_purchase
+            payload = {"symbol": good_symbol,
+                       "units": units_to_purchase}
+            response = post(f"{SHIPS_BASE_URL}/{self.symbol}/purchase",
+                            json=payload, headers=HEADERS)
+            js = response.json()
+            if response.ok:
+                try:
+                    new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
+                    transaction = MarketTransaction.model_validate(
+                        js["data"]["transaction"])
+                    self.cargo = new_cargo
+                    self.log(transaction.model_dump_json(indent=2))
+                    self.log("Purchase Successful", success=True)
+                    self.update()
+                    return True
+                except ValidationError as e:
+                    self.log(f"Bad RESPONSE: {
+                        json.dumps(js, indent=1)}", error=True)
+                    self.log(e)
+                    return False
+            else:
+                self.log(f"Attempt Failed: \n{json.dumps(
+                    js, indent=1)}", error=True)
                 return False
-        else:
-            self.log(f"Attempt Failed: \n{json.dumps(
-                js, indent=1)}", error=True)
-            return False
+        return False
 
     def jettison(self, good_symbol, units=0) -> bool:
         if units == 0:
@@ -502,10 +508,11 @@ class Ship(BaseModel, Observable):
             self.log("ERROR: Ship is in transit")
         route = calculate_route(
             self.nav.waypointSymbol, destination.symbol, self.fuel.capacity, self.fuel.current)
-        self.log("Route Calculated\n"+"\n".join(f"{wp} {refuel}" for wp, refuel in route))
+        self.log("Route Calculated\n" +
+                 "\n".join(f"{wp} {refuel}" for wp, refuel in route))
         if not route:
             return False
-        if len(route)>1:
+        if len(route) > 1:
             wp, refuel = route[0]
             if refuel:
                 if self.nav.status == ShipNavStatus.DOCKED:
@@ -522,6 +529,7 @@ class Ship(BaseModel, Observable):
                     self.refuel()
                     self.orbit()
         return True
+
 
 def get_ship_list() -> List[Ship]:
     ta = TypeAdapter(List[Ship])

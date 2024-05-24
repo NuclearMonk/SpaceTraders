@@ -39,20 +39,3 @@ class Market(BaseModel):
     exchange: List[Good]
     transactions: Optional[List[MarketTransaction]] = None
     tradeGoods: Optional[List[MarketTradeGood]] = None
-
-
-
-
-
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("symbol")
-#     parser.add_argument("-s", "--search")
-#     args = parser.parse_args()
-#     if args.symbol:
-#         if not is_system_symbol(args.symbol):
-#             if market := get_market(get_waypoint_with_symbol(args.symbol)):
-#                 print(market.model_dump_json(indent=2))
-#         else:
-#             print_json(get_all_markets(get_system_with_symbol(args.symbol)))
