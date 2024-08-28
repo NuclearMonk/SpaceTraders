@@ -252,7 +252,6 @@ class Ship(BaseModel, Observable):
             return False, None
         if survey:
             self.log(f"Using survey {survey.signature}")
-            self.log(survey.model_dump_json(indent=2))
             self.log(survey.deposits)
             response = post(f"{SHIPS_BASE_URL}/{self.symbol}/extract",
                             survey.model_dump_json(), headers=HEADERS)
@@ -327,7 +326,7 @@ class Ship(BaseModel, Observable):
         units_left = units
         while units_left > 0:
             units_to_purchase = units_left if units_left < 20 else 20
-            units_left-= units_to_purchase
+            units_left -= units_to_purchase
             payload = {"symbol": good_symbol,
                        "units": units_to_purchase}
             response = post(f"{SHIPS_BASE_URL}/{self.symbol}/purchase",
@@ -503,7 +502,7 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return None
 
-    async def route_navigate(self, destination: Waypoint) -> bool:
+    async def route_navigate(self, destination: Waypoint, dock: bool = False) -> bool:
         if self.nav.status == ShipNavStatus.IN_TRANSIT:
             self.log("ERROR: Ship is in transit")
         route = calculate_route(
@@ -522,12 +521,22 @@ class Ship(BaseModel, Observable):
                     self.dock()
                     self.refuel()
                     self.orbit()
-            for wp, refuel in route[1:]:
+            for wp, refuel in route[1:-1]:
                 await self.navigate(wp)
                 if refuel:
                     self.dock()
                     self.refuel()
                     self.orbit()
+            wp, refuel = route[-1]
+            await self.navigate(wp)
+            if dock:
+                self.dock()
+                if refuel:
+                    self.refuel()
+            elif refuel:
+                self.dock()
+                self.refuel()
+                self.orbit()
         return True
 
 

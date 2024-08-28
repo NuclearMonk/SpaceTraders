@@ -1,12 +1,13 @@
 
 
 from asyncio import sleep
-from typing import Any, Coroutine, override
+from typing import Any, Coroutine, List, Set, override
 from crud.market import get_markets_exporting
 from crud.waypoint import get_waypoint_with_symbol
 from schemas.contract import Contract
 from schemas.navigation import Waypoint
 from schemas.ship import Ship, ShipNavStatus
+from schemas.survey import Survey
 
 
 class WorkOrder:
@@ -34,17 +35,27 @@ class WorkOrder:
 
 class TravelToWaypoint(WorkOrder):
 
-    def __init__(self, ship: Ship, destination: Waypoint) -> None:
+    def __init__(self, ship: Ship, destination: Waypoint, dock: bool = False) -> None:
         self.destination = destination
+        self.dock = dock
         super().__init__(ship)
 
     @override
     def setup(self) -> bool:
-        self.ship.log("WORK ORDER SETUP")
         return True
-    
+
     async def run(self) -> Coroutine[Any, Any, bool]:
-        return await self.ship.route_navigate(self.destination)
+        return await self.ship.route_navigate(self.destination, self.dock)
+
+
+class WaitFor(WorkOrder):
+    def __init__(self, ship: Ship, t:int) -> None:
+        super().__init__(ship)
+        self.time = t
+    async def run(self):
+        await sleep(self.t)
+        return True
+
 
 class FulfillProcurementContract(WorkOrder):
 
@@ -54,7 +65,6 @@ class FulfillProcurementContract(WorkOrder):
 
     @override
     def setup(self):
-        self.ship.log("WORK ORDER SETUP")
         self.good = self.contract.terms.deliver[0]
         self.delivery_waypoint = get_waypoint_with_symbol(
             self.good.destinationSymbol)
@@ -63,7 +73,8 @@ class FulfillProcurementContract(WorkOrder):
         markets = get_markets_exporting(self.good.tradeSymbol)
         if not markets:
             return False
-        markets.sort(key=lambda x: self.delivery_waypoint.distance_to(get_waypoint_with_symbol(x.symbol)))
+        markets.sort(key=lambda x: self.delivery_waypoint.distance_to(
+            get_waypoint_with_symbol(x.symbol)))
         self.purchase_waypoint = markets[0]
         self.units_to_deliver = self.good.unitsRequired - self.good.unitsFulfilled
         if in_cargo := self.ship.cargo.items().get(self.good.tradeSymbol):
@@ -76,8 +87,6 @@ class FulfillProcurementContract(WorkOrder):
         return True
 
     async def run(self):
-        self.ship.log("WORK ORDER RUN")
-
         while True:
             if self.units_to_deliver == 0:  # we delivered everything
                 return True
@@ -109,6 +118,37 @@ class FulfillProcurementContract(WorkOrder):
 
     @override
     def cleanup(self):
-        self.ship.log("WORK ORDER CLEANUP")
-
         return self.contract.fulfill()
+
+
+class MineUntilFull(WorkOrder):
+
+    def __init__(self, ship: Ship, look_for: Set[str]) -> None:
+        super().__init__(ship)
+        self.look_for = look_for
+
+    def setup(self) -> bool:
+        return True
+
+    def cleanup(self) -> bool:
+        return True
+
+    async def run(self) -> bool:
+        surveys: List[Survey] = []
+        while True:
+            if not surveys:
+                success, surveys = self.ship.survey()
+                def sort_func(x): return x.rank_survey(self.look_for)
+                surveys = list(filter(sort_func, surveys))
+                if surveys:
+                    surveys.sort(key=sort_func, reverse=True)
+                self.ship.log(surveys)
+            else:
+                if survey := surveys[0]:
+                    if not survey.is_valid:
+                        surveys = []
+                        continue
+                success, extraction = self.ship.extract(survey)
+                if success and extraction.yield_field.symbol not in self.look_for:
+                    self.ship.jettison(
+                        extraction.yield_field.symbol, extraction.yield_field.units)
