@@ -5,11 +5,12 @@ from pathlib import Path
 from os import path
 
 
+DB_PATH = 'sqlite:///data/test.db'
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
 SYSTEM_BASE_URL = "https://api.spacetraders.io/v2/systems/"
 CONTRACTS_BASE_URL = "https://api.spacetraders.io/v2/my/contracts/"
 CREDENTIALS_PATH = Path("data/apikey")
-USERNAME = "shocsoaress"
+USERNAME = "shocsoares"
 FACTION = "VOID"
 
 
@@ -54,6 +55,6 @@ patch = session.patch
 if __name__ == "__main__":
     register()
 else:
-    engine =  create_engine('sqlite:///data/test.db')
+    engine =  create_engine(DB_PATH)
     HEADERS = get_api_key()
     HEADERS = {"Authorization": f"Bearer {HEADERS}"}

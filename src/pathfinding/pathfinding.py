@@ -2,7 +2,7 @@
 
 from heapq import heappop, heappush
 from math import sqrt
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from crud.waypoint import get_waypoint_with_symbol
 from schemas.navigation import Waypoint

@@ -1,17 +1,15 @@
 
 
-from datetime import UTC, timedelta
+from datetime import timedelta
 from typing import List, Optional
 from sqlalchemy import select
 from crud.tradegood import get_good, get_good_model
 from crud.transaction import get_transaction, store_transaction
-from crud.waypoint import get_waypoint_with_symbol, get_waypoints_in_system
 from models.market import MarketModel, TradeGoodModel
 from models.waypoint import WaypointModel
 from schemas.market import Market
 from sqlalchemy.orm import Session
 from login import HEADERS, SYSTEM_BASE_URL, engine, get
-from schemas.navigation import System
 from utils.utils import system_symbol_from_wp_symbol, utcnow
 STALE_TIME = timedelta(minutes=1)
 

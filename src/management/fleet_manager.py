@@ -19,7 +19,7 @@ class FleetManager():
     def __init__(self) -> None:
         print("STARTING MANAGER")
         self.ships : Dict[str, Ship]= {ship.symbol: ship for ship in get_ship_list()}
-        self.roles = {"SHOCSOARESS-1": ShipRoles.CONTRACTOR}
+        self.roles = {"SHOCSOARES-1": ShipRoles.CONTRACTOR}
         self.controllers : Dict[str, ShipController]= {symbol: ShipController(self.ships[symbol]) for symbol in self.ships}
 
 
@@ -36,7 +36,7 @@ class FleetManager():
                 contracts = get_open_contracts()
                 if not contracts:
                     print("No open contracts, negotiating")
-                    self.ships["SHOCSOARESS-2"].negotiate_contract()
+                    self.ships["SHOCSOARES-2"].negotiate_contract()
                     contracts = get_open_contracts()
                 contract = contracts[0]
                 print(f"New Contract is {contract.id}")
@@ -44,8 +44,7 @@ class FleetManager():
                 print(f"Contract Fulfilled {contract.id}")
                 contract = None
             if not contract.accepted:
-                print(f"Accepting {contract.id}, Assigning to SHOCSOARESS-1")
+                print(f"Accepting {contract.id}, Assigning to SHOCSOARES-1")
                 contract.accept()
-            if contract.accepted and (not self.controllers["SHOCSOARESS-1"].work_order):
-                print("WTF")
-                self.controllers["SHOCSOARESS-1"].work_order= FulfillProcurementContract(self.ships["SHOCSOARESS-1"], contract)
+            if contract.accepted and (not self.controllers["SHOCSOARES-1"].work_order):
+                self.controllers["SHOCSOARES-1"].work_order= FulfillProcurementContract(self.ships["SHOCSOARES-1"], contract)

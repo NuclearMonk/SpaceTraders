@@ -31,7 +31,8 @@ if __name__ == "__main__":
 
     if args.distance:
         start_point = get_waypoint_with_symbol(args.distance)
-        results.sort(key=lambda x: start_point.distance_to(get_waypoint_with_symbol(x.symbol)))
+        results.sort(key=lambda x: start_point.distance_to(
+            get_waypoint_with_symbol(x.symbol)))
 
     for result in results:
         if args.distance:

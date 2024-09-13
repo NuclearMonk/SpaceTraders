@@ -1,7 +1,3 @@
-
-
-
-
 from argparse import ArgumentParser, Namespace
 import asyncio
 
@@ -18,7 +14,7 @@ if __name__ == "__main__":
     ship_options = ship_parser.add_mutually_exclusive_group()
     ship_options.add_argument("--negotiate", action="store_true")
     ship_options.add_argument("--deliver", type=str, nargs=3)
-    
+
     ship_options.add_argument("-o", "--orbit", action="store_true")
     ship_options.add_argument("-d", "--dock", action="store_true")
     ship_options.add_argument("-r", "--refuel", action="store_true")
@@ -46,9 +42,11 @@ if __name__ == "__main__":
                 elif args.dock:
                     ship.dock()
                 elif args.navigate:
-                    asyncio.run(ship.navigate(get_waypoint_with_symbol(args.navigate)))
+                    asyncio.run(ship.navigate(
+                        get_waypoint_with_symbol(args.navigate)))
                 elif args.route:
-                    asyncio.run(ship.route_navigate(get_waypoint_with_symbol(args.route)))
+                    asyncio.run(ship.route_navigate(
+                        get_waypoint_with_symbol(args.route)))
                 elif args.patch_navigation:
                     ship.change_flight_mode(
                         ShipNavFlightMode(args.patch_navigation))
