@@ -11,22 +11,25 @@ from utils.utils import utcnow
 
 from schemas.navigation import Waypoint, WaypointFaction
 from crud import get_modifier, store_modifier, get_trait, store_trait
+from logging import getLogger
 
 STALE_TIME = timedelta(minutes=15)
 
+logger = getLogger(__name__)
 
 
 def get_waypoint_with_symbol(symbol: str):
+    logger.info(f"getting waypoint with symbol {symbol}")
     with Session(engine) as session:
         if wp := _get_waypoint_from_db(symbol, session):
             if utcnow() - wp.time_updated_utc < STALE_TIME:
-                print("fresh from cache")
+                logger.info("fresh from cache")
                 return _record_to_schema(wp)
             else:
-                print("updating cache")
+                logger.info("updating cache")
                 fresh_wp = _get_waypoint_from_server(symbol)
                 return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
-        print("added new cache row")
+        logger.info("added new cache row")
         fresh_wp = _get_waypoint_from_server(symbol)
         wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
         return wp
@@ -50,9 +53,9 @@ def _get_waypoint_from_server(symbol: str) -> Optional[Waypoint]:
         try:
             return Waypoint.model_validate(js["data"])
         except ValidationError as e:
-            print(e)
+            logger.info(e)
             return None
-    print(response)
+    logger.info(response)
     return None
 
 

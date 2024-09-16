@@ -36,7 +36,6 @@ if __name__ == "__main__":
         case "ship":
             if args.id:
                 ship: Ship = get_ship_with_symbol(args.id)
-                ship.logger = console.print
                 if args.orbit:
                     ship.orbit()
                 elif args.dock:

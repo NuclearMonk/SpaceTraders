@@ -13,7 +13,3 @@ if __name__ == "__main__":
             wp = get_waypoint_with_symbol(waypoint.symbol)
             if wp.has_trait("MARKETPLACE"):
                 get_market_with_symbol(wp.symbol)
-
-    # print(*(wp.symbol for wp  in get_waypoints_in_system(args.symbol, "MARKETPLACE")), sep="\n")
-    # get_waypoint_with_symbol("X1-U25-H53")
-    # print(get_market_with_symbol("X1-U25-H53").model_dump_json(indent=2))

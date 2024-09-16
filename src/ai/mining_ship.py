@@ -58,6 +58,5 @@ class MinerShipController(ShipController):
                     self.ship.refuel()
                     self.ship.orbit()
                 case _:
-                    print("ERROR")
-                    print(self.ship.model_dump_json(indent=2))
+                    self.ship.log(self.ship.model_dump_json(indent=2),error=True)
                     return False

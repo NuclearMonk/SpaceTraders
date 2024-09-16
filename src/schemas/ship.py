@@ -3,17 +3,17 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
 from typing import Callable, Dict, List, Optional, Tuple
-from pydantic import BaseModel, Field, TypeAdapter, ValidationError
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError, computed_field
 from login import CONTRACTS_BASE_URL, HEADERS
 from schemas.contract import Contract
 from schemas.market import Good, MarketTransaction
 from schemas.navigation import Waypoint
 from utils.observable import Observable
 from schemas.survey import Survey
-from utils.utils import error_wrap, format_time_ms, print_json, success_wrap, time_until, console
+from utils.utils import error_wrap, format_time_ms, success_wrap, time_until
 from requests import Response, get, post, patch
 from pathfinding.pathfinding import calculate_route
-
+from custom_logging import create_ship_logger
 SHIPS_BASE_URL = 'https://api.spacetraders.io/v2/my/ships'
 
 
@@ -159,9 +159,10 @@ class Ship(BaseModel, Observable):
     mounts: List[ShipMount]
     logger: Optional[Callable[[str], None]] = Field(print, exclude=True)
 
+    def model_post_init(self, __context) -> None:
+        self.logger= create_ship_logger(self.symbol)
     def log(self, log: str, success: bool = False, error: bool = False) -> None:
-        msg = f"[{self.nav.waypointSymbol}@{format_time_ms(datetime.now(UTC))}]{
-            self.symbol}: {log}"
+        msg = f"[{self.symbol}@{format_time_ms(datetime.now(UTC))}]{self.nav.waypointSymbol}: {log}"
         if success:
             self.logger(success_wrap(msg))
         elif error:
@@ -390,7 +391,7 @@ class Ship(BaseModel, Observable):
         response = post(
             f"{SHIPS_BASE_URL}/{self.symbol}/refuel", headers=HEADERS)
         js = response.json()
-        print_json(js)
+        self.log(json.dumps(js, indent=2))
         if response.ok:
             try:
                 new_fuel = ShipFuel.model_validate(js["data"]["fuel"])
@@ -418,7 +419,7 @@ class Ship(BaseModel, Observable):
         response = patch(
             f"{SHIPS_BASE_URL}/{self.symbol}/nav", json=data, headers=HEADERS)
         js = response.json()
-        print_json(js)
+        self.log(dumps(js, indent=2))
         if response.ok:
             try:
                 nav = ShipNav.model_validate(js["data"])
@@ -470,8 +471,7 @@ class Ship(BaseModel, Observable):
     def negotiate_contract(self) -> None:
         response = post(
             f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
-        print(response.ok)
-        print_json(response.json())
+        self.log(response.json())
 
     def deliver_to_contract(self, contract_id: str, trade_symbol: str, units: int) -> Optional[Contract]:
         self.log(f"Attempting To Deliver Contract {contract_id} Cargo")
@@ -508,7 +508,7 @@ class Ship(BaseModel, Observable):
         route = calculate_route(
             self.nav.waypointSymbol, destination.symbol, self.fuel.capacity, self.fuel.current)
         self.log("Route Calculated\n" +
-                 "\n".join(f"{wp} {refuel}" for wp, refuel in route))
+                 "\n".join(f"{wp.symbol} {refuel}" for wp, refuel in route))
         if not route:
             return False
         if len(route) > 1:

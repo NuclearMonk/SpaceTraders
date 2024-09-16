@@ -65,11 +65,11 @@ class FulfillProcurementContract(WorkOrder):
 
     @override
     def setup(self):
+        self.ship.log("Procurement Contract Work Order Setup")
         self.good = self.contract.terms.deliver[0]
         self.delivery_waypoint = get_waypoint_with_symbol(
             self.good.destinationSymbol)
-        if self.good.unitsRequired <= self.good.unitsFulfilled:
-            return False
+
         markets = get_markets_exporting(self.good.tradeSymbol)
         if not markets:
             return False
@@ -77,6 +77,8 @@ class FulfillProcurementContract(WorkOrder):
             get_waypoint_with_symbol(x.symbol)))
         self.purchase_waypoint = markets[0]
         self.units_to_deliver = self.good.unitsRequired - self.good.unitsFulfilled
+        if self.units_to_deliver <= 0:
+            return True
         if in_cargo := self.ship.cargo.items().get(self.good.tradeSymbol):
             self.units_to_pickup = self.units_to_deliver - in_cargo
         else:

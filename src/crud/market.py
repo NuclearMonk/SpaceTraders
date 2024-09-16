@@ -11,20 +11,24 @@ from schemas.market import Market
 from sqlalchemy.orm import Session
 from login import HEADERS, SYSTEM_BASE_URL, engine, get
 from utils.utils import system_symbol_from_wp_symbol, utcnow
+from logging import getLogger
+logger = getLogger(__name__)
 STALE_TIME = timedelta(minutes=1)
 
 
 def get_market_with_symbol(symbol: str):
+    logger.info(f"getting market with symbol {symbol}")
     with Session(engine) as session:
         if market := _get_market_from_db(symbol, session):
             if utcnow() - market.time_updated_utc < STALE_TIME:
-                print("fresh from cache")
+                logger.info("fresh from cache")
                 return _record_to_schema(market)
             else:
-                print("updating cache")
+                logger.info("updating cache")
+                
                 fresh_market = _get_market_from_server(symbol)
                 return _record_to_schema(_update_market_in_db(market, fresh_market, session))
-        print("added new cache row")
+        logger.info("fresh from cache")
         fresh_market = _get_market_from_server(symbol)
         market = _record_to_schema(_store_market_in_db(fresh_market, session))
         return market
