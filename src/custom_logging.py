@@ -10,7 +10,6 @@ def log(file, msg):
     with open(file, "a") as f:
         f.write(msg)
         f.write("\n")
-
 def create_logger(name: str)-> Callable[[str], None]:
     log_file = Path("data", "logs", f"{name}.log")
     return open(log_file, "a").write

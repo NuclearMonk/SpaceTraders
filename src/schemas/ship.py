@@ -160,9 +160,11 @@ class Ship(BaseModel, Observable):
     logger: Optional[Callable[[str], None]] = Field(print, exclude=True)
 
     def model_post_init(self, __context) -> None:
-        self.logger= create_ship_logger(self.symbol)
+        self.logger = create_ship_logger(self.symbol)
+
     def log(self, log: str, success: bool = False, error: bool = False) -> None:
-        msg = f"[{self.symbol}@{format_time_ms(datetime.now(UTC))}]{self.nav.waypointSymbol}: {log}"
+        msg = f"[{
+            self.symbol}@{format_time_ms(datetime.now(UTC))}]{self.nav.waypointSymbol}: {log}"
         if success:
             self.logger(success_wrap(msg))
         elif error:
@@ -538,18 +540,3 @@ class Ship(BaseModel, Observable):
                 self.refuel()
                 self.orbit()
         return True
-
-
-def get_ship_list() -> List[Ship]:
-    ta = TypeAdapter(List[Ship])
-    ships = ta.validate_python(
-        get(SHIPS_BASE_URL, headers=HEADERS).json()["data"])
-    return ships
-
-
-def get_ship_with_symbol(symbol: str) -> Optional[Ship]:
-    response: Response = get(f"{SHIPS_BASE_URL}/{symbol}", headers=HEADERS)
-    if not response.ok:
-        print(response)
-        return None
-    return Ship.model_validate(response.json()["data"])
