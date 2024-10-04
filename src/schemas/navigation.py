@@ -105,7 +105,3 @@ def get_system_with_symbol(symbol: str) -> Optional[System]:
             return None
     print(response)
     return None
-
-
-def distance_between_waypoints(A: Waypoint, B: Waypoint) -> float:
-    return math.sqrt((A.x-B.x)**2 + (A.y-B.y)**2)

@@ -60,24 +60,24 @@ def get_contract(id: str):
         return None
 
 
-def get_all_contracts(limit=20):
-    contracts: list[Contract] = []
-    ta = TypeAdapter(List[Contract])
-    current = 0
-    m = float("inf")
-    page = 1
-    while current < m:
-        response = get(CONTRACTS_BASE_URL +
-                       f"?page={page}&limit={limit}", headers=HEADERS)
-        if response.ok:
-            js = response.json()
-            m = js["meta"]["total"]
-            current += len(js["data"])
-            page += 1
-            new_contracts = ta.validate_python(js["data"])
-            contracts.extend(new_contracts)
-    return contracts
+# def get_all_contracts(limit=20):
+#     contracts: list[Contract] = []
+#     ta = TypeAdapter(List[Contract])
+#     current = 0
+#     m = float("inf")
+#     page = 1
+#     while current < m:
+#         response = get(CONTRACTS_BASE_URL +
+#                        f"?page={page}&limit={limit}", headers=HEADERS)
+#         if response.ok:
+#             js = response.json()
+#             m = js["meta"]["total"]
+#             current += len(js["data"])
+#             page += 1
+#             new_contracts = ta.validate_python(js["data"])
+#             contracts.extend(new_contracts)
+#     return contracts
 
 
-def get_open_contracts() -> List[Contract]:
-    return [contract for contract in get_all_contracts() if not contract.fulfilled]
+# def get_open_contracts() -> List[Contract]:
+#     return [contract for contract in get_all_contracts() if not contract.fulfilled]
