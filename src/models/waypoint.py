@@ -49,7 +49,7 @@ class TraitModel(Base):
 class WaypointModel(Base):
     __tablename__ = "waypoints"
     symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
-    systemSymbol: Mapped[str] = mapped_column(Text(20))
+    system_symbol: Mapped[str] = mapped_column(Text(20))
     wp_type: Mapped[str] = mapped_column(Text(20))
     x: Mapped[int] = mapped_column(Integer)
     y: Mapped[int] = mapped_column(Integer)

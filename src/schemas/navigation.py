@@ -43,7 +43,7 @@ class Waypoint(BaseModel):
     isUnderConstruction: Optional[bool] = None
 
     @property
-    def systemSymbol(self) -> str:
+    def system_symbol(self) -> str:
         return system_symbol_from_wp_symbol(self.symbol)
     
     def has_trait(self, trait_symbol:str)-> bool:

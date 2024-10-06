@@ -421,7 +421,7 @@ class Ship(BaseModel, Observable):
         response = patch(
             f"{SHIPS_BASE_URL}/{self.symbol}/nav", json=data, headers=HEADERS)
         js = response.json()
-        self.log(dumps(js, indent=2))
+        self.log(json.dumps(js, indent=2))
         if response.ok:
             try:
                 nav = ShipNav.model_validate(js["data"])
@@ -540,3 +540,4 @@ class Ship(BaseModel, Observable):
                 self.refuel()
                 self.orbit()
         return True
+    

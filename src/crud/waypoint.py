@@ -62,8 +62,8 @@ def _get_waypoint_from_server(symbol: str) -> Optional[Waypoint]:
 def _update_waypoint_in_db(db_wp: WaypointModel, wp: Waypoint, session: Session) -> WaypointModel:
     if wp.type:
         db_wp.wp_type = wp.type
-    if wp.systemSymbol:
-        db_wp.systemSymbol = wp.systemSymbol
+    if wp.system_symbol:
+        db_wp.system_symbol = wp.system_symbol
     if wp.x:
         db_wp.x = wp.x
     if wp.y:
@@ -86,7 +86,7 @@ def _store_waypoint_in_db(wp: Waypoint, session: Session)->WaypointModel:
     added_wp = WaypointModel()
     added_wp.symbol = wp.symbol
     added_wp.wp_type = wp.type
-    added_wp.systemSymbol = wp.systemSymbol
+    added_wp.system_symbol = wp.system_symbol
     added_wp.x = wp.x
     added_wp.y = wp.y
     added_wp.parent_symbol = wp.orbits
@@ -119,11 +119,11 @@ def _record_to_schema(wp: WaypointModel) -> Waypoint:
 def get_waypoints_in_system(system_symbol: str, trait_symbol: Optional[str] = None) -> List[Waypoint]:
     with Session(engine) as session:
         if trait_symbol:
-            stmt = select(WaypointModel).where(WaypointModel.systemSymbol == system_symbol,
+            stmt = select(WaypointModel).where(WaypointModel.system_symbol == system_symbol,
                                                WaypointModel.traits.any(TraitModel.symbol == trait_symbol))
         else:
             stmt = select(WaypointModel).where(
-                WaypointModel.systemSymbol == system_symbol)
+                WaypointModel.system_symbol == system_symbol)
         return [_record_to_schema(t) for t in session.scalars(stmt).all()]
 
 

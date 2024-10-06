@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from login import HEADERS, SYSTEM_BASE_URL, engine, get
 from utils.utils import system_symbol_from_wp_symbol, utcnow
 from logging import getLogger
+
 logger = getLogger(__name__)
 STALE_TIME = timedelta(minutes=1)
 
@@ -36,7 +37,7 @@ def get_market_with_symbol(symbol: str):
 
 def get_markets_in_system(system: str) -> List[Market]:
     stmt = select(MarketModel).join(WaypointModel).where(
-        WaypointModel.systemSymbol == system)
+        WaypointModel.system_symbol == system)
     with Session(engine) as session:
         return [_record_to_schema(x) for x in session.scalars(stmt)]
 
@@ -44,7 +45,7 @@ def get_markets_in_system(system: str) -> List[Market]:
 def get_markets_exporting(good: str, system: Optional[str] = None) -> List[Market]:
     if system:
         stmt = select(MarketModel).join(WaypointModel).where(
-            WaypointModel.systemSymbol == system,
+            WaypointModel.system_symbol == system,
             MarketModel.exports.any(TradeGoodModel.symbol == good))
     else:
         stmt = select(MarketModel).where(
@@ -56,7 +57,7 @@ def get_markets_exporting(good: str, system: Optional[str] = None) -> List[Marke
 def get_markets_importing(good: str, system: Optional[str] = None) -> List[Market]:
     if system:
         stmt = select(MarketModel).join(WaypointModel).where(
-            WaypointModel.systemSymbol == system,
+            WaypointModel.system_symbol == system,
             MarketModel.imports.any(TradeGoodModel.symbol == good))
     else:
         stmt = select(MarketModel).where(
@@ -68,7 +69,7 @@ def get_markets_importing(good: str, system: Optional[str] = None) -> List[Marke
 def get_markets_exchanging(good: str, system: Optional[str] = None) -> List[Market]:
     if system:
         stmt = select(MarketModel).join(WaypointModel).where(
-            WaypointModel.systemSymbol == system,
+            WaypointModel.system_symbol == system,
             MarketModel.exchanges.any(TradeGoodModel.symbol == good))
     else:
         stmt = select(MarketModel).where(
