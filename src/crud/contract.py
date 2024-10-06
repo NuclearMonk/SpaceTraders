@@ -17,9 +17,14 @@ def get_contract_with_id(id: str):
             _store_contract_in_db(fresh_contract, session))
         return contract
 
+
 def get_all_contracts():
     with Session(engine) as session:
         return [_record_to_schema(c) for c in session.scalars(select(ContractModel)).all()]
+
+def get_open_contracts():
+    with Session(engine) as session:
+        return [_record_to_schema(c) for c in session.scalars(select(ContractModel).where(ContractModel.fulfilled == False)).all()]
 
 def update_contract(contract: Contract):
     with Session(engine) as session:
@@ -31,14 +36,15 @@ def update_contract(contract: Contract):
         else:
             _store_contract_in_db(contract, session)
 
+
 def refresh_cache():
     contracts = _get_all_contracts_from_server()
     with Session(engine) as session:
         for contract in contracts:
             if db_contract := _get_contract_from_db(contract.id, session):
-                return _record_to_schema(_update_contract_in_db(db_contract, contract, session))
-        _record_to_schema(
-            _store_contract_in_db(contract, session))
+                _update_contract_in_db(db_contract, contract, session)
+            else:
+                _store_contract_in_db(contract, session)
 
 
 def _get_all_contracts_from_server(limit=20):

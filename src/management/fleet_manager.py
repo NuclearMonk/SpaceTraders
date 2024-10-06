@@ -1,8 +1,9 @@
 import logging
 import pprint
 from typing import List
+from crud import get_open_contracts
 from management.managed_ship import ManagedShip
-from schemas.contract import Contract, get_all_contracts
+from schemas.contract import Contract
 from schemas.ship import Ship, get_ship_list
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,3 @@ def get_ship_with_role(ships: List[Ship], role: str):
             return s
     else:
         return None
-
-
-def get_open_contracts() -> List[Contract]:
-    return [contract for contract in get_all_contracts() if not contract.fulfilled]
