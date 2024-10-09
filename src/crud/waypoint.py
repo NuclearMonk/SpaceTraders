@@ -28,12 +28,12 @@ def get_waypoint_with_symbol(symbol: str):
                     logger.info("wp is under construction so refreshing")
                     fresh_wp = _get_waypoint_from_server(symbol)
                     return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
-                # traits can change so we check for those too
-                if wp.traits:
+                # modifiers can change so we check for those too
+                if wp.modifiers:
                     logger.info("wp has traits so refreshing")
                     fresh_wp = _get_waypoint_from_server(symbol)
                     return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
-                if "UNCHARTED" in {m.symbol for m in wp.modifiers}:
+                if "UNCHARTED" in {t.symbol for t in wp.traits}:
                     logger.info("wp is UNCHARTED so refreshing")
                     fresh_wp = _get_waypoint_from_server(symbol)
                     return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))

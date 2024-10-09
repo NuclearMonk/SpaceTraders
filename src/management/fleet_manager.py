@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 class FleetManager:
     def __init__(self) -> None:
         ships = get_ship_list()
-        self.ships = [ManagedShip(ship)for ship in ships]
-        # we always have one and it cant do anything else so might as well do this
         self.contract_negotiator = get_ship_with_role(ships, 'SATELLITE')
+        ships.remove(self.contract_negotiator)
+        self.ships = [ManagedShip(ship)for ship in ships]
+        print(self.ships)
+        # we always have one and it cant do anything else so might as well do this
         # we take it of the general list of ships since it doesn't really make a difference
-        self.ships.remove(self.contract_negotiator)
         self.contract = None
         self.update_caches()
 
