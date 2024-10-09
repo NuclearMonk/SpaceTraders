@@ -13,7 +13,7 @@ from schemas.navigation import Waypoint, WaypointFaction
 from crud import get_modifier, store_modifier, get_trait, store_trait
 from logging import getLogger
 
-STALE_TIME = timedelta(minutes=15)
+STALE_TIME = timedelta(minutes=1)
 
 logger = getLogger(__name__)
 
@@ -22,13 +22,23 @@ def get_waypoint_with_symbol(symbol: str):
     logger.info(f"getting waypoint with symbol {symbol}")
     with Session(engine) as session:
         if wp := _get_waypoint_from_db(symbol, session):
-            if utcnow() - wp.time_updated_utc < STALE_TIME:
-                logger.info("fresh from cache")
-                return _record_to_schema(wp)
-            else:
-                logger.info("updating cache")
-                fresh_wp = _get_waypoint_from_server(symbol)
-                return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
+            if not utcnow() - wp.time_updated_utc < STALE_TIME:
+                # we refresh under construction waypoints thing may have changed
+                if wp.isUnderConstruction:
+                    logger.info("wp is under construction so refreshing")
+                    fresh_wp = _get_waypoint_from_server(symbol)
+                    return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
+                # traits can change so we check for those too
+                if wp.traits:
+                    logger.info("wp has traits so refreshing")
+                    fresh_wp = _get_waypoint_from_server(symbol)
+                    return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
+                if "UNCHARTED" in {m.symbol for m in wp.modifiers}:
+                    logger.info("wp is UNCHARTED so refreshing")
+                    fresh_wp = _get_waypoint_from_server(symbol)
+                    return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
+            logger.info("fresh from cache")
+            return _record_to_schema(wp)
         logger.info("added new cache row")
         fresh_wp = _get_waypoint_from_server(symbol)
         wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
@@ -82,7 +92,7 @@ def _update_waypoint_in_db(db_wp: WaypointModel, wp: Waypoint, session: Session)
     return db_wp
 
 
-def _store_waypoint_in_db(wp: Waypoint, session: Session)->WaypointModel:
+def _store_waypoint_in_db(wp: Waypoint, session: Session) -> WaypointModel:
     added_wp = WaypointModel()
     added_wp.symbol = wp.symbol
     added_wp.wp_type = wp.type

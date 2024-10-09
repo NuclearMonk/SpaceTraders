@@ -20,6 +20,7 @@ class FleetManager:
         # we take it of the general list of ships since it doesn't really make a difference
         self.ships.remove(self.contract_negotiator)
         self.contract = None
+        self.update_caches()
 
     def run(self):
         while True:
@@ -33,6 +34,15 @@ class FleetManager:
                     self.negotiate_new_contract()
 
                     
+    
+    def systems_with_ships(self):
+        systems = {s.ship.nav.systemSymbol for s in self.ships}
+        systems.add(self.contract_negotiator.nav.systemSymbol)
+        return list(systems)
+    
+    def update_caches(self):
+        for system in self.systems_with_ships():
+            reload_system_cache(system)
 
     def negotiate_new_contract(self):
         self.contract_negotiator.negotiate_contract()
@@ -43,6 +53,7 @@ def reload_system_cache(symbol: str)-> None:
         wp = get_waypoint_with_symbol(waypoint.symbol)
         if wp.has_trait("MARKETPLACE"):
             get_market_with_symbol(wp.symbol)
+
 
 
 def get_ship_with_role(ships: List[Ship], role: str):
