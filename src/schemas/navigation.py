@@ -90,6 +90,7 @@ def split_symbol(symbol: str):
     return symbol.split("-")
 
 
+
 def get_system_with_symbol(symbol: str) -> Optional[System]:
     if is_system_symbol(symbol):
         system_symbol = symbol

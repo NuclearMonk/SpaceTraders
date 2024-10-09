@@ -18,18 +18,18 @@ STALE_TIME = timedelta(minutes=1)
 
 
 def get_market_with_symbol(symbol: str):
-    logger.info(f"getting market with symbol {symbol}")
+    logger.debug(f"Getting market: {symbol}")
     with Session(engine) as session:
         if market := _get_market_from_db(symbol, session):
             if utcnow() - market.time_updated_utc < STALE_TIME:
-                logger.info("fresh from cache")
+                logger.debug("FRESH MARKET CACHE")
                 return _record_to_schema(market)
             else:
-                logger.info("updating cache")
+                logger.debug("UPDATING MARKET CACHE")
                 
                 fresh_market = _get_market_from_server(symbol)
                 return _record_to_schema(_update_market_in_db(market, fresh_market, session))
-        logger.info("fresh from cache")
+        logger.debug("FRESH MARKET CACHE")
         fresh_market = _get_market_from_server(symbol)
         market = _record_to_schema(_store_market_in_db(fresh_market, session))
         return market

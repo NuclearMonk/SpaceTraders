@@ -10,6 +10,14 @@ from schemas.contract import Contract, ContractDelivery, ContractPayment, Contra
 from sqlalchemy.orm import Session
 
 
+def store_contract(contract: Contract):
+    with Session(engine) as session:
+        if db_contract := _get_contract_from_db(id, session):
+            _update_contract_in_db(db_contract, contract)
+        else:
+            _store_contract_in_db(contract, session)
+
+
 def get_contract_with_id(id: str):
     with Session(engine) as session:
         if contract := _get_contract_from_db(id, session):
@@ -38,7 +46,7 @@ def update_contract(contract: Contract):
             _store_contract_in_db(contract, session)
 
 
-def refresh_cache():
+def refresh_contract_cache():
     contracts = _get_all_contracts_from_server()
     with Session(engine) as session:
         for contract in contracts:

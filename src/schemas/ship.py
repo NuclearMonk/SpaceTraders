@@ -2,8 +2,11 @@ from asyncio import sleep
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
+import logging
 from typing import Callable, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError, computed_field
+from crud.contract import store_contract
+from crud.transaction import store_transaction
 from login import CONTRACTS_BASE_URL, HEADERS
 from schemas.contract import Contract
 from schemas.market import Good, MarketTransaction
@@ -157,20 +160,20 @@ class Ship(BaseModel, Observable):
     reactor: ShipReactor
     engine: ShipEngine
     mounts: List[ShipMount]
-    logger: Optional[Callable[[str], None]] = Field(print, exclude=True)
 
     def model_post_init(self, __context) -> None:
-        self.logger = create_ship_logger(self.symbol)
+        create_ship_logger(self.symbol)
 
     def log(self, log: str, success: bool = False, error: bool = False) -> None:
+        logger = logging.getLogger(self.symbol)
         msg = f"[{
             self.symbol}@{format_time_ms(datetime.now(UTC))}]{self.nav.waypointSymbol}: {log}"
         if success:
-            self.logger(success_wrap(msg))
+            logger.info(msg)
         elif error:
-            self.logger(error_wrap(msg))
+            logger.error(msg)
         else:
-            self.logger(msg)
+            logger.info(msg)
 
     def orbit(self) -> bool:
         self.log(f"Attempting to Orbit")
@@ -303,6 +306,7 @@ class Ship(BaseModel, Observable):
                 new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
                 transaction = MarketTransaction.model_validate(
                     js["data"]["transaction"])
+                store_transaction(transaction)
                 self.cargo = new_cargo
                 self.log(js["data"]["transaction"])
                 self.log("Sell Successful", success=True)
@@ -340,6 +344,7 @@ class Ship(BaseModel, Observable):
                     new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
                     transaction = MarketTransaction.model_validate(
                         js["data"]["transaction"])
+                    store_transaction(transaction)
                     self.cargo = new_cargo
                     self.log(transaction.model_dump_json(indent=2))
                     self.log("Purchase Successful", success=True)
@@ -399,6 +404,7 @@ class Ship(BaseModel, Observable):
                 new_fuel = ShipFuel.model_validate(js["data"]["fuel"])
                 transaction = MarketTransaction.model_validate(
                     js["data"]["transaction"])
+                store_transaction(transaction)
                 self.fuel = new_fuel
                 self.log("Refuel Successful", success=True)
                 self.log(transaction)
@@ -470,10 +476,23 @@ class Ship(BaseModel, Observable):
                 js, indent=1)}", error=True)
             return False
 
-    def negotiate_contract(self) -> None:
+    def negotiate_contract(self) -> Optional[Contract]:
         response = post(
-            f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
-        self.log(response.json())
+f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
+        if response.ok:
+            js = response.json()
+            try:
+                contract = Contract.model_validate_json(js["data"]["contract"])
+                store_contract(contract)
+                return contract
+            except ValidationError as e:
+                self.log(f"Bad RESPONSE: {
+                         json.dumps(js, indent=1)}", error=True)
+                self.log(e)
+                return None
+        self.log(f"Attempt Failed:\n{json.dumps(
+                js, indent=1)}", error=True)
+        return None
 
     def deliver_to_contract(self, contract_id: str, trade_symbol: str, units: int) -> Optional[Contract]:
         self.log(f"Attempting To Deliver Contract {contract_id} Cargo")
@@ -493,6 +512,7 @@ class Ship(BaseModel, Observable):
                 new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
                 self.cargo = new_cargo
                 contract = Contract.model_validate(js["data"]["contract"])
+                store_contract(contract)
                 return contract
             except ValidationError as e:
                 self.log(f"Bad RESPONSE: {
