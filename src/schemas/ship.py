@@ -541,3 +541,8 @@ class Ship(BaseModel, Observable):
                 self.orbit()
         return True
     
+def get_ship_list() -> List[Ship]:
+    ta = TypeAdapter(List[Ship])
+    ships = ta.validate_python(
+        get(SHIPS_BASE_URL, headers=HEADERS).json()["data"])
+    return ships
