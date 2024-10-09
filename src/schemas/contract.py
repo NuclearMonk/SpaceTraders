@@ -16,7 +16,7 @@ class ContractPayment(BaseModel):
     onFulfilled: int
 
 
-class ContractDeliveryGood(BaseModel):
+class ContractDelivery(BaseModel):
     tradeSymbol: str
     destinationSymbol: str
     unitsRequired: int
@@ -26,7 +26,7 @@ class ContractDeliveryGood(BaseModel):
 class ContractTerms(BaseModel):
     deadline: datetime
     payment: ContractPayment
-    deliver: List[ContractDeliveryGood]
+    deliver: List[ContractDelivery]
 
 
 class Contract(BaseModel):

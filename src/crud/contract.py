@@ -2,9 +2,11 @@ from typing import List, Optional
 
 from pydantic import TypeAdapter
 from sqlalchemy import select
+from crud.tradegood import get_good
+from crud.waypoint import get_waypoint_with_symbol
 from login import HEADERS, SYSTEM_BASE_URL, CONTRACTS_BASE_URL, engine, get
-from models.contract import ContractModel
-from schemas.contract import Contract, ContractDeliveryGood, ContractPayment, ContractTerms
+from models.contract import ContractDeliveryModel, ContractModel
+from schemas.contract import Contract, ContractDelivery, ContractPayment, ContractTerms
 from sqlalchemy.orm import Session
 
 
@@ -22,17 +24,16 @@ def get_all_contracts():
     with Session(engine) as session:
         return [_record_to_schema(c) for c in session.scalars(select(ContractModel)).all()]
 
+
 def get_open_contracts():
     with Session(engine) as session:
         return [_record_to_schema(c) for c in session.scalars(select(ContractModel).where(ContractModel.fulfilled == False)).all()]
 
+
 def update_contract(contract: Contract):
     with Session(engine) as session:
         if db_contract := _get_contract_from_db(contract.id, session):
-            db_contract.deliver_units_fulfilled = contract.terms.deliver[0].unitsFulfilled
-            db_contract.accepted = contract.accepted
-            db_contract.fulfilled = contract.fulfilled
-            session.commit()
+            _update_contract_in_db(db_contract, contract)
         else:
             _store_contract_in_db(contract, session)
 
@@ -77,11 +78,8 @@ def _record_to_schema(contract: ContractModel) -> Contract:
                             payment=ContractPayment(
                                 onAccepted=contract.terms_pay_accepted,
                                 onFulfilled=contract.terms_pay_fulfilled),
-                            deliver=[ContractDeliveryGood(
-                                tradeSymbol=contract.deliver_trade_symbol,
-                                destinationSymbol=contract.deliver_symbol,
-                                unitsRequired=contract.deliver_units_required,
-                                unitsFulfilled=contract.fulfilled)]
+                            deliver=[_get_contract_delivery(
+                                delivery) for delivery in contract.deliver]
                             ),
         accepted=contract.accepted,
         fulfilled=contract.fulfilled,
@@ -90,10 +88,14 @@ def _record_to_schema(contract: ContractModel) -> Contract:
 
 
 def _update_contract_in_db(db_contract: ContractModel, contract: Contract, session: Session) -> ContractModel:
+    print("updating contract")
     db_contract.accepted = contract.accepted
     db_contract.fulfilled = contract.fulfilled
-    db_contract.deliver_units_required = contract.terms.deliver[0].unitsRequired
-    db_contract.deliver_units_fulfilled = contract.terms.deliver[0].unitsFulfilled
+    for delivery in contract.terms.deliver:
+        session.scalars(select(
+            ContractDeliveryModel).where(
+                ContractDeliveryModel.contract_id == contract.id and
+            ContractDeliveryModel.trade_symbol == delivery.tradeSymbol)).first().fulfilled = delivery.unitsFulfilled
     session.commit()
     return db_contract
 
@@ -106,10 +108,8 @@ def _store_contract_in_db(contract: Contract, session: Session) -> ContractModel
     new_contract.terms_deadline = contract.terms.deadline
     new_contract.terms_pay_accepted = contract.terms.payment.onAccepted
     new_contract.terms_pay_fulfilled = contract.terms.payment.onFulfilled
-    new_contract.deliver_trade_symbol = contract.terms.deliver[0].tradeSymbol
-    new_contract.deliver_symbol = contract.terms.deliver[0].destinationSymbol
-    new_contract.deliver_units_required = contract.terms.deliver[0].unitsRequired
-    new_contract.deliver_units_fulfilled = contract.terms.deliver[0].unitsFulfilled
+    new_contract.deliver = [_store_delivery(
+        delivery, session) for delivery in contract.terms.deliver]
     new_contract.accepted = contract.accepted
     new_contract.fulfilled = contract.fulfilled
     new_contract.deadline_to_accept = contract.deadlineToAccept
@@ -127,5 +127,24 @@ def _get_contract_from_server(id: str) -> Optional[Contract]:
         return None
 
 
-def _get_contract_from_db(id: str, session):
+def _get_contract_from_db(id: str, session: Session):
     return session.scalars(select(ContractModel).where(ContractModel.id == id)).first()
+
+
+def _store_delivery(delivery: ContractDelivery, session: Session) -> ContractDeliveryModel:
+    model = ContractDeliveryModel()
+    model.trade_symbol = delivery.tradeSymbol
+    model.delivery_symbol = delivery.destinationSymbol
+    model.required = delivery.unitsRequired
+    model.fulfilled = delivery.unitsFulfilled
+    session.commit()
+    return model
+
+
+def _get_contract_delivery(model: ContractDeliveryModel) -> ContractDelivery:
+    return ContractDelivery(
+        tradeSymbol=model.trade_symbol,
+        destinationSymbol=model.delivery_symbol,
+        unitsRequired=model.required,
+        unitsFulfilled=model.fulfilled
+    )

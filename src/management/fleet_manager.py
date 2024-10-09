@@ -2,8 +2,11 @@ import logging
 import pprint
 from typing import List
 from crud import get_open_contracts
+from crud.market import get_market_with_symbol
+from crud.waypoint import get_waypoint_with_symbol
 from management.managed_ship import ManagedShip
 from schemas.contract import Contract
+from schemas.navigation import get_system_with_symbol
 from schemas.ship import Ship, get_ship_list
 logger = logging.getLogger(__name__)
 
@@ -33,6 +36,14 @@ class FleetManager:
 
     def negotiate_new_contract(self):
         self.contract_negotiator.negotiate_contract()
+        
+def reload_system_cache(symbol: str)-> None:
+    system = get_system_with_symbol(symbol)
+    for waypoint in system.waypoints:
+        wp = get_waypoint_with_symbol(waypoint.symbol)
+        if wp.has_trait("MARKETPLACE"):
+            get_market_with_symbol(wp.symbol)
+
 
 def get_ship_with_role(ships: List[Ship], role: str):
     for s in ships:
