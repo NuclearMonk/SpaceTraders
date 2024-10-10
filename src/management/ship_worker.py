@@ -10,8 +10,13 @@ class Worker:
 
     def __init__(self, ship: Ship) -> None:
         self.ship = ship
+        self.symbol = ship.symbol
         self.idle: bool = True
         self.job: Optional[Job] = None
+
+    def assign_job(self, job:Job):
+        self.idle= False
+        self.job = job
 
     async def run(self):
         while True:

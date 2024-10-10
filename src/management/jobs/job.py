@@ -5,24 +5,20 @@ from schemas.ship import Ship
 
 class Job:
     
-
-    def __init__(self, ship: Ship) -> None:
-        self.ship = ship
-
-    def start(self):
+    def start(self,ship: Ship):
         return True
 
-    async def work(self):
+    async def work(self,ship: Ship):
         return True
 
-    def end(self):
+    def end(self,ship: Ship):
         return True    
 
-    async def execute(self):
-        if not self.start():
+    async def execute(self,ship: Ship):
+        if not self.start(ship):
             return False
-        if not await self.work():
+        if not await self.work(ship):
             return False
-        if not self.end():
+        if not self.end(ship):
             return False
         return True

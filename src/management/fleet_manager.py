@@ -1,10 +1,17 @@
+import asyncio
+import collections
 import logging
 import pprint
 from typing import List
 from crud import get_open_contracts
 from crud.contract import refresh_contract_cache
-from crud.market import get_market_with_symbol
+from crud.market import get_market_with_symbol, get_markets_importing
 from crud.waypoint import get_waypoint_with_symbol, get_waypoints_in_system, refresh_system_cache
+from management.jobs.job import Job
+from management.jobs.mine import Mine
+from management.jobs.sell import Sell
+from management.jobs.travel import Travel
+from management.ship_worker import Worker
 from schemas.contract import Contract
 from schemas.ship import Ship, get_ship_list
 logger = logging.getLogger(__name__)
@@ -16,7 +23,8 @@ class FleetManager:
         self.contract_negotiator = get_ship_with_role(ships, 'SATELLITE')
         ships.remove(self.contract_negotiator)
         self.ships = ships
-        print(self.ships)
+        self.workers= [Worker(ship) for ship in self.ships]
+
         # we always have one and it cant do anything else so might as well do this
         # we take it of the general list of ships since it doesn't really make a difference
         self.contract = None
@@ -24,15 +32,13 @@ class FleetManager:
 
     def run(self):
         while True:
-            # #assumption, it's always profitable to serve a contract, if it's possible
-            # #so we should always have a contract
-            # if not self.contract:
-            #     # we fetch from the server, some situations from boot may require it
-            #     contracts = get_open_contracts()
-            #     if not contracts:
-            #         # then we don't have an open contract at all and should negotiate a new one
-            #         self.negotiate_new_contract()
-            #         continue
+            asyncio.sleep(1)
+            for worker in self.workers:
+                print(worker.symbol, worker.idle)
+                if not worker.idle:
+                    continue
+                worker.assign_job(find_best_job(worker))
+                break
             
                     
     
@@ -51,8 +57,16 @@ class FleetManager:
         
 
 
-
-
+def find_best_job(worker:Worker)-> Job:
+    good_symbols = ["ALUMINUM_ORE", "COPPER_ORE", "IRON_ORE"]
+    if worker.ship.cargo.capacity_remaining == 0:
+        if worker.ship.nav.waypointSymbol != "X1-DV3-H49":
+            return Travel(get_waypoint_with_symbol("X1-DV3-H49"))
+        goods_in_ship = {s for s,_  in worker.ship.cargo.items}
+        return Sell(list(goods_in_ship.intersection(good_symbols)))
+    if worker.ship.nav.waypointSymbol != "X1-DV3-XZ5D":
+        return Travel(get_market_with_symbol("X1-DV3-XZ5D"))
+    return Mine(list(good_symbols))
 
 def get_ship_with_role(ships: List[Ship], role: str):
     for s in ships:

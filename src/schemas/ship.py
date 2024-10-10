@@ -298,29 +298,36 @@ class Ship(BaseModel, Observable):
         if self.nav.status != ShipNavStatus.DOCKED:
             self.log("Attempt Failed: Ship is NOT DOCKED", error=True)
             return False
-        response = post(f"{SHIPS_BASE_URL}/{self.symbol}/sell",
-                        json=payload, headers=HEADERS)
-        js = response.json()
-        if response.ok:
-            try:
-                new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
-                transaction = MarketTransaction.model_validate(
-                    js["data"]["transaction"])
-                store_transaction(transaction)
-                self.cargo = new_cargo
-                self.log(js["data"]["transaction"])
-                self.log("Sell Successful", success=True)
-                self.update()
-                return True
-            except ValidationError as e:
-                self.log(f"Bad RESPONSE: {
-                         json.dumps(js, indent=1)}", error=True)
-                self.log(e)
+        units_left = units
+        while units_left > 0:
+            units_to_sell = units_left if units_left < 20 else 20
+            units_left -= units_to_sell
+            payload = {"symbol": good_symbol,
+                       "units": units_to_sell}
+            response = post(f"{SHIPS_BASE_URL}/{self.symbol}/sell",
+                            json=payload, headers=HEADERS)
+            js = response.json()
+            if response.ok:
+                try:
+                    new_cargo = ShipCargo.model_validate(js["data"]["cargo"])
+                    transaction = MarketTransaction.model_validate(
+                        js["data"]["transaction"])
+                    store_transaction(transaction)
+                    self.cargo = new_cargo
+                    self.log(transaction.model_dump_json(indent=2))
+                    self.log("Purchase Successful", success=True)
+                    self.update()
+                    return True
+                except ValidationError as e:
+                    self.log(f"Bad RESPONSE: {
+                        json.dumps(js, indent=1)}", error=True)
+                    self.log(e)
+                    return False
+            else:
+                self.log(f"Attempt Failed: \n{json.dumps(
+                    js, indent=1)}", error=True)
                 return False
-        else:
-            self.log(f"Attempt Failed: \n{json.dumps(
-                js, indent=1)}", error=True)
-            return False
+        return False
 
     def purchase(self, good_symbol: str, units=-1) -> bool:
         if units == -1:
@@ -529,10 +536,10 @@ class Ship(BaseModel, Observable):
             self.log("ERROR: Ship is in transit")
         route = calculate_route(
             self.nav.waypointSymbol, destination.symbol, self.fuel.capacity, self.fuel.current)
-        self.log("Route Calculated\n" +
-                 "\n".join(f"{wp.symbol} {refuel}" for wp, refuel in route))
         if not route:
             return False
+        self.log("Route Calculated\n" +
+                 "\n".join(f"{wp.symbol} {refuel}" for wp, refuel in route))
         if len(route) > 1:
             wp, refuel = route[0]
             if refuel:
