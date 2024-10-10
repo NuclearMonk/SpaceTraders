@@ -13,7 +13,7 @@ from schemas.market import Good, MarketTransaction
 from schemas.navigation import Waypoint
 from utils.observable import Observable
 from schemas.survey import Survey
-from utils.utils import error_wrap, format_time_ms, success_wrap, time_until
+from utils.utils import error_wrap, format_time_ms, success_wrap, time_until, console
 from requests import Response, get, post, patch
 from pathfinding.pathfinding import calculate_route
 from custom_logging import create_ship_logger
@@ -170,9 +170,12 @@ class Ship(BaseModel, Observable):
             self.symbol}@{format_time_ms(datetime.now(UTC))}]{self.nav.waypointSymbol}: {log}"
         if success:
             logger.info(msg)
+            console.print(success_wrap(msg))
         elif error:
             logger.error(msg)
+            console.print(error_wrap(msg))
         else:
+            console.print(msg)
             logger.info(msg)
 
     def orbit(self) -> bool:
@@ -315,7 +318,7 @@ class Ship(BaseModel, Observable):
                     store_transaction(transaction)
                     self.cargo = new_cargo
                     self.log(transaction.model_dump_json(indent=2))
-                    self.log("Purchase Successful", success=True)
+                    self.log("Sale Successful", success=True)
                     self.update()
                     return True
                 except ValidationError as e:

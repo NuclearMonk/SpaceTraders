@@ -30,11 +30,12 @@ class FleetManager:
         self.contract = None
         self.update_caches()
 
-    def run(self):
+    async def run(self):
+        for worker in self.workers:
+            asyncio.Task(worker.run())
         while True:
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
             for worker in self.workers:
-                print(worker.symbol, worker.idle)
                 if not worker.idle:
                     continue
                 worker.assign_job(find_best_job(worker))
@@ -62,7 +63,7 @@ def find_best_job(worker:Worker)-> Job:
     if worker.ship.cargo.capacity_remaining == 0:
         if worker.ship.nav.waypointSymbol != "X1-DV3-H49":
             return Travel(get_waypoint_with_symbol("X1-DV3-H49"))
-        goods_in_ship = {s for s,_  in worker.ship.cargo.items}
+        goods_in_ship = {s for s  in worker.ship.cargo.items()}
         return Sell(list(goods_in_ship.intersection(good_symbols)))
     if worker.ship.nav.waypointSymbol != "X1-DV3-XZ5D":
         return Travel(get_market_with_symbol("X1-DV3-XZ5D"))

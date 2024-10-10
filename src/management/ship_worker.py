@@ -23,8 +23,8 @@ class Worker:
             await asyncio.sleep(0.2)
             if self.job:
                 self.idle = False
-                self.ship.log("CONTROLLER: Has Work Order")
-                if not await self.job.execute():
-                    self.ship.logger("CONTROLLER: EXECUTION FAILED")
+                self.ship.log("Worker: Has Work Order")
+                if not await self.job.execute(self.ship):
+                    self.ship.logger("Worker: EXECUTION FAILED")
                 self.job = None
                 self.idle = True

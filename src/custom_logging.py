@@ -10,7 +10,7 @@ def create_ship_logger(ship_symbol: str) -> Callable[[str], None]:
     logger = logging.getLogger(ship_symbol)
     logger.setLevel(logging.DEBUG)
     handler.setFormatter(logging.Formatter(
-        "format='%(asctime)s|%(name)s%(message)s",
+        fmt='%(asctime)s|%(name)s%(message)s',
         datefmt='%m/%d/%Y %I:%M:%S %p'))
 
     logger.addHandler(handler)

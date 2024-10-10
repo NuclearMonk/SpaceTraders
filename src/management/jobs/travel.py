@@ -23,6 +23,7 @@ class Travel(Job):
             if refuel:
                 ship.log(f"Travel: Refueling")
                 if ship.nav.status == ShipNavStatus.DOCKED:
+                    print("WTF")
                     ship.refuel()
                     ship.orbit()
                 elif ship.nav.status == ShipNavStatus.IN_ORBIT:

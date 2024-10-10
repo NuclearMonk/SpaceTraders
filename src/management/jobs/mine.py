@@ -19,15 +19,17 @@ class Mine(Job):
         ship.log("Mine: Job Ended")
         return True
 
-    def work(self, ship: Ship):
-        survey : Optional[Survey]= None
+    async def work(self, ship: Ship):
+        survey: Optional[Survey] = None
         while True:
-            asyncio.sleep(0.2)
-            match ship.cooldown.time_remaining, ship.cargo.capacity_remaining:
+            await asyncio.sleep(0.2)
+            print(ship.cooldown.time_remaining.total_seconds(), ship.cargo.capacity_remaining)
+
+            match ship.cooldown.time_remaining.total_seconds(), ship.cargo.capacity_remaining:
                 case _, 0:  # no capacity remaining
                     ship.log("Mine: Cargo Full")
                     if self.jettison_useless_cargo(ship) == 0:
-                        #cargo is full of useful stuff
+                        # cargo is full of useful stuff
                         # we are done
                         return True
                     else:
@@ -38,33 +40,33 @@ class Mine(Job):
                     # 0 cooldown means we need to mine
                     if survey and not survey.is_valid or not survey:
                         ship.log("Mine: Getting Fresh Survey")
-                        survey = self.get_survey()
-                    if survey and survey.is_valid:
+                        survey = self.get_survey(ship)
+                        continue
+                    elif survey and survey.is_valid:
                         ship.log("Mine: Try Extracting WITH Survey")
                         ship.extract(survey)
-                case t,_:
+                        continue
+                case t, _ if t > 0:
                     # Any cooldown means we need to just do nothing for the duration of the cooldown
                     ship.log(f"Mine: Waiting for Cooldown({t} seconds)")
-                    asyncio.sleep(t)
+                    await asyncio.sleep(t)
+                    continue
 
-                    
-
-    def jettison_useless_cargo(self, ship) -> int:
+    def jettison_useless_cargo(self, ship: Ship) -> int:
         '''jettisons cargo not in look_for, and returns the total amount of units dumped'''
         total: int = 0
-        for symbol, units in ship.cargo.items():
+        for symbol, units in ship.cargo.items().items():
             if symbol not in self.look_for:
                 ship.jettison(symbol, units)
                 total += units
         return total
 
-    def get_survey(self, ship)-> Optional[Survey]:
+    def get_survey(self, ship) -> Optional[Survey]:
         surveys = ship.survey()
         if surveys:
-            sort_func = lambda x: x.rank_survey(self.look_for)
-            surveys = list(filter(sort_func ,surveys))
+            def sort_func(x): return x.rank_survey(self.look_for)
+            surveys = list(filter(sort_func, surveys))
             if surveys:
-                surveys.sort(key = sort_func, reverse=True)
+                surveys.sort(key=sort_func, reverse=True)
                 return surveys[0]
         return None
-        

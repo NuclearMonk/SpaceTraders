@@ -10,8 +10,12 @@ from schemas.market import Good, MarketTransaction
 def get_transaction(ship_symbol :str , timestamp: datetime):
     with Session(engine) as session:
         return _record_to_schema(_get_transaction(ship_symbol,timestamp, session))
-    
-def store_transaction(trans: MarketTransaction, session)-> MarketTransactionModel:
+
+def store_transaction(trans: MarketTransaction):
+    with Session(engine) as session:
+        _store_transaction(trans,session)
+
+def _store_transaction(trans: MarketTransaction, session)-> MarketTransactionModel:
     if t := _get_transaction(trans.shipSymbol, trans.timestamp, session):
         return t
     t = MarketTransactionModel()

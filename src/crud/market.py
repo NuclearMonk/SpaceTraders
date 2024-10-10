@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import List, Optional
 from sqlalchemy import select
 from crud.tradegood import get_good, get_good_model
-from crud.transaction import get_transaction, store_transaction
+from crud.transaction import get_transaction, _store_transaction
 from models.market import MarketModel, TradeGoodModel
 from models.waypoint import WaypointModel
 from schemas.market import Market
@@ -102,7 +102,7 @@ def _store_market_in_db(market: Market, session: Session) -> MarketModel:
     new_market.exchanges = [get_good_model(good, session)
                             for good in market.exchange]
     if market.transactions:
-        new_market.transactions = [store_transaction(
+        new_market.transactions = [_store_transaction(
             trans, session) for trans in market.transactions]
     else:
         new_market.transactions = []
@@ -112,7 +112,7 @@ def _store_market_in_db(market: Market, session: Session) -> MarketModel:
 
 def _update_market_in_db(db_market: MarketModel, market: Market, session: Session) -> MarketModel:
     if market.transactions:
-        db_market.transactions = [store_transaction(trans, session)
+        db_market.transactions = [_store_transaction(trans, session)
                                   for trans in market.transactions]
     db_market.time_updated = utcnow()
     session.commit()
