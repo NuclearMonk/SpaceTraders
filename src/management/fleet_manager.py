@@ -33,7 +33,7 @@ class FleetManager:
             #         # then we don't have an open contract at all and should negotiate a new one
             #         self.negotiate_new_contract()
             #         continue
-            ...
+            
                     
     
     def systems_with_ships(self):

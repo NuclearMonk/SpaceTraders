@@ -222,11 +222,11 @@ class Ship(BaseModel, Observable):
                 response.json(), indent=1)}", error=True)
             return False
 
-    def survey(self) -> Tuple[bool, Optional[List[Survey]]]:
+    def survey(self) -> Optional[List[Survey]]:
         self.log(f"Attempting to Survey")
         if self.nav.status != ShipNavStatus.IN_ORBIT:
             self.log("Attempt Failed: Ship is NOT IN ORBIT", error=True)
-            return False, None
+            return None
         response = post(
             f"{SHIPS_BASE_URL}/{self.symbol}/survey", headers=HEADERS)
         if response.ok:
@@ -242,11 +242,11 @@ class Ship(BaseModel, Observable):
                     response.json(), indent=1)}", error=True)
             self.log("Survey Successful", success=True)
             self.log(surveys)
-            return True, surveys
+            return surveys
         else:
             self.log(f"Attempt Failed: \n{json.dumps(
                 response.json(), indent=1)}", error=True)
-            return False, None
+            return None
 
     def extract(self, survey: Survey = None) -> Tuple[bool, Optional[Extraction]]:
         self.log(f"Attempting to Extract")
@@ -478,7 +478,7 @@ class Ship(BaseModel, Observable):
 
     def negotiate_contract(self) -> Optional[Contract]:
         response = post(
-f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
+            f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
         if response.ok:
             js = response.json()
             try:
@@ -491,7 +491,7 @@ f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
                 self.log(e)
                 return None
         self.log(f"Attempt Failed:\n{json.dumps(
-                js, indent=1)}", error=True)
+            js, indent=1)}", error=True)
         return None
 
     def deliver_to_contract(self, contract_id: str, trade_symbol: str, units: int) -> Optional[Contract]:
@@ -560,7 +560,8 @@ f"{SHIPS_BASE_URL}/{self.symbol}/negotiate/contract", headers=HEADERS)
                 self.refuel()
                 self.orbit()
         return True
-    
+
+
 def get_ship_list() -> List[Ship]:
     ta = TypeAdapter(List[Ship])
     ships = ta.validate_python(
