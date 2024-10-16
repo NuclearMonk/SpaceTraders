@@ -96,7 +96,6 @@ def _record_to_schema(contract: ContractModel) -> Contract:
 
 
 def _update_contract_in_db(db_contract: ContractModel, contract: Contract, session: Session) -> ContractModel:
-    print("updating contract")
     db_contract.accepted = contract.accepted
     db_contract.fulfilled = contract.fulfilled
     for delivery in contract.terms.deliver:

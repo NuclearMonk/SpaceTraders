@@ -1,18 +1,14 @@
 import asyncio
-import collections
 import logging
-import pprint
 from typing import List
-from crud import get_open_contracts
 from crud.contract import refresh_contract_cache
-from crud.market import get_market_with_symbol, get_markets_importing
-from crud.waypoint import get_waypoint_with_symbol, get_waypoints_in_system, refresh_system_cache
-from management.jobs.job import Job
-from management.jobs.mine import Mine
-from management.jobs.sell import Sell
-from management.jobs.travel import Travel
-from management.ship_worker import Worker
-from schemas.contract import Contract
+from crud.market import get_market_with_symbol
+from crud.waypoint import get_waypoint_with_symbol, refresh_system_cache
+from management.routines.routine import Routine
+from management.routines.mine import Mine
+from management.routines.sell import Sell
+from management.routines.travel import Travel
+from management.ship_worker import ShipWorker
 from schemas.ship import Ship, get_ship_list
 logger = logging.getLogger(__name__)
 
@@ -23,7 +19,7 @@ class FleetManager:
         self.contract_negotiator = get_ship_with_role(ships, 'SATELLITE')
         ships.remove(self.contract_negotiator)
         self.ships = ships
-        self.workers= [Worker(ship) for ship in self.ships]
+        self.workers= [ShipWorker(ship) for ship in self.ships]
 
         # we always have one and it cant do anything else so might as well do this
         # we take it of the general list of ships since it doesn't really make a difference
@@ -38,7 +34,7 @@ class FleetManager:
             for worker in self.workers:
                 if not worker.idle:
                     continue
-                worker.assign_job(find_best_job(worker))
+                worker.assign_routine(find_best_job(worker))
                 break
             
                     
@@ -58,7 +54,7 @@ class FleetManager:
         
 
 
-def find_best_job(worker:Worker)-> Job:
+def find_best_job(worker:ShipWorker)-> Routine:
     good_symbols = ["ALUMINUM_ORE", "COPPER_ORE", "IRON_ORE"]
     if worker.ship.cargo.capacity_remaining == 0:
         if worker.ship.nav.waypointSymbol != "X1-DV3-H49":

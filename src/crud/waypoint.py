@@ -53,8 +53,10 @@ def update_waypoint_cache(wp: Waypoint) -> Waypoint:
         wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
         return wp
 
-def refresh_system_cache(system_symbol: str)-> None:
-    get_waypoints_in_system(system_symbol)
+
+def refresh_system_cache(system_symbol: str) -> None:
+    get_waypoints(system_symbol=system_symbol)
+
 
 def _get_waypoint_from_server(symbol: str) -> Optional[Waypoint]:
     split_symbol = symbol.split("-")
@@ -128,15 +130,15 @@ def _record_to_schema(wp: WaypointModel) -> Waypoint:
     )
 
 
-
-def get_waypoints_in_system(system_symbol: str, trait_symbol: Optional[str] = None) -> List[Waypoint]:
+def get_waypoints(system_symbol: str = None, type: str = None, trait_symbols: List[str] = None) -> List[Waypoint]:
     with Session(engine) as session:
-        if trait_symbol:
-            stmt = select(WaypointModel).where(WaypointModel.system_symbol == system_symbol,
-                                               WaypointModel.traits.any(TraitModel.symbol == trait_symbol))
-        else:
-            stmt = select(WaypointModel).where(
-                WaypointModel.system_symbol == system_symbol)
+        stmt = select(WaypointModel)
+        if system_symbol:
+            stmt = stmt.where(WaypointModel.system_symbol == system_symbol)
+        if type:
+            stmt = stmt.where(WaypointModel.wp_type == type)
+        if trait_symbols:
+            stmt = stmt.where(WaypointModel.traits.any(TraitModel.symbol.in_(trait_symbols)))
         return [get_waypoint_with_symbol(wp.symbol) for wp in session.scalars(stmt).all()]
 
 

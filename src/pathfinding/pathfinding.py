@@ -4,9 +4,8 @@ from heapq import heappop, heappush
 from math import sqrt
 from typing import Dict, List, Optional
 
-from crud.waypoint import get_waypoint_with_symbol
+from crud.waypoint import get_waypoint_with_symbol, get_waypoints
 from schemas.navigation import Waypoint
-from crud import get_waypoints_in_system
 from utils.utils import system_symbol_from_wp_symbol
 
 
@@ -84,7 +83,7 @@ def calculate_route(start: str, destination: str, max_fuel: int, starting_fuel: 
     start_system = system_symbol_from_wp_symbol(start)
     destination_system = system_symbol_from_wp_symbol(destination)
     if start_system == destination_system:
-        waypoints = get_waypoints_in_system(start_system)
+        waypoints = get_waypoints(system_symbol=start_system)
         previous, distances, refuel = dijkstra_with_fuel(
             start, destination, waypoints, max_fuel, starting_fuel)
         if destination in previous:

@@ -1,12 +1,12 @@
 import asyncio
 from typing import List, Optional
-from management.jobs.job import Job
+from management.routines.routine import Routine
 from schemas.navigation import Waypoint
 from schemas.ship import Ship
 from schemas.survey import Survey
 
 
-class Mine(Job):
+class Mine(Routine):
 
     def __init__(self, look_for: List[str]) -> None:
         self.look_for = frozenset(look_for)

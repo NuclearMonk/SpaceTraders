@@ -2,19 +2,19 @@
 
 import asyncio
 from typing import Optional
-from management.jobs.job import Job
+from management.routines.routine import Routine
 from schemas.ship import Ship
 
 
-class Worker:
+class ShipWorker:
 
     def __init__(self, ship: Ship) -> None:
         self.ship = ship
         self.symbol = ship.symbol
         self.idle: bool = True
-        self.job: Optional[Job] = None
+        self.job: Optional[Routine] = None
 
-    def assign_job(self, job:Job):
+    def assign_routine(self, job:Routine):
         self.idle= False
         self.job = job
 

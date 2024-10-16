@@ -1,12 +1,12 @@
 
 
-from management.jobs.job import Job
+from management.routines.routine import Routine
 from pathfinding.pathfinding import calculate_route
 from schemas.navigation import Waypoint
 from schemas.ship import Ship, ShipNavStatus
 
 
-class Travel(Job):
+class Travel(Routine):
 
     def __init__(self, destination: Waypoint) -> None:
         self.destination = destination
@@ -23,7 +23,6 @@ class Travel(Job):
             if refuel:
                 ship.log(f"Travel: Refueling")
                 if ship.nav.status == ShipNavStatus.DOCKED:
-                    print("WTF")
                     ship.refuel()
                     ship.orbit()
                 elif ship.nav.status == ShipNavStatus.IN_ORBIT:

@@ -1,9 +1,9 @@
 from typing import List
-from management.jobs.job import Job
+from management.routines.routine import Routine
 from schemas.ship import Ship
 
 
-class Sell(Job):
+class Sell(Routine):
 
     def __init__(self, sell: List[str]) -> None:
         self.sell = sell
