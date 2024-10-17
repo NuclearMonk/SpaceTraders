@@ -18,7 +18,7 @@ def store_contract(contract: Contract):
             _store_contract_in_db(contract, session)
 
 
-def get_contract_with_id(id: str):
+def get_contract(id: str):
     with Session(engine) as session:
         if contract := _get_contract_from_db(id, session):
             return _record_to_schema(contract)
@@ -56,23 +56,7 @@ def refresh_contract_cache():
                 _store_contract_in_db(contract, session)
 
 
-def _get_all_contracts_from_server(limit=20):
-    contracts: list[Contract] = []
-    ta = TypeAdapter(List[Contract])
-    current = 0
-    m = float("inf")
-    page = 1
-    while current < m:
-        response = get(CONTRACTS_BASE_URL +
-                       f"?page={page}&limit={limit}", headers=HEADERS)
-        if response.ok:
-            js = response.json()
-            m = js["meta"]["total"]
-            current += len(js["data"])
-            page += 1
-            new_contracts = ta.validate_python(js["data"])
-            contracts.extend(new_contracts)
-    return contracts
+
 
 
 def _record_to_schema(contract: ContractModel) -> Contract:
@@ -86,8 +70,10 @@ def _record_to_schema(contract: ContractModel) -> Contract:
                             payment=ContractPayment(
                                 onAccepted=contract.terms_pay_accepted,
                                 onFulfilled=contract.terms_pay_fulfilled),
-                            deliver=[_get_contract_delivery(
-                                delivery) for delivery in contract.deliver]
+                            deliver=[ContractDelivery(tradeSymbol=delivery.trade_symbol,
+                                                      destinationSymbol=delivery.delivery_symbol,
+                                                      unitsRequired=delivery.required,
+                                                      unitsFulfilled=delivery.fulfilled) for delivery in contract.deliver]
                             ),
         accepted=contract.accepted,
         fulfilled=contract.fulfilled,
@@ -133,25 +119,33 @@ def _get_contract_from_server(id: str) -> Optional[Contract]:
     else:
         return None
 
+def _get_all_contracts_from_server(limit=20):
+    contracts: list[Contract] = []
+    ta = TypeAdapter(List[Contract])
+    current = 0
+    m = float("inf")
+    page = 1
+    while current < m:
+        response = get(CONTRACTS_BASE_URL +
+                       f"?page={page}&limit={limit}", headers=HEADERS)
+        if response.ok:
+            js = response.json()
+            m = js["meta"]["total"]
+            current += len(js["data"])
+            page += 1
+            new_contracts = ta.validate_python(js["data"])
+            contracts.extend(new_contracts)
+    return contracts
 
 def _get_contract_from_db(id: str, session: Session):
     return session.scalars(select(ContractModel).where(ContractModel.id == id)).first()
 
 
 def _store_delivery(delivery: ContractDelivery, session: Session) -> ContractDeliveryModel:
-    model = ContractDeliveryModel()
-    model.trade_symbol = delivery.tradeSymbol
-    model.delivery_symbol = delivery.destinationSymbol
-    model.required = delivery.unitsRequired
-    model.fulfilled = delivery.unitsFulfilled
-    session.commit()
-    return model
-
-
-def _get_contract_delivery(model: ContractDeliveryModel) -> ContractDelivery:
-    return ContractDelivery(
-        tradeSymbol=model.trade_symbol,
-        destinationSymbol=model.delivery_symbol,
-        unitsRequired=model.required,
-        unitsFulfilled=model.fulfilled
-    )
+    d = ContractDeliveryModel()
+    d.trade_symbol = delivery.tradeSymbol
+    d.delivery_symbol = delivery.destinationSymbol
+    d.required = delivery.unitsRequired
+    d.fulfilled = delivery.unitsFulfilled
+    session.add(d)
+    return d

@@ -6,6 +6,7 @@ import logging
 from typing import Callable, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError, computed_field
 from crud.contract import store_contract
+from crud.survey import store_survey
 from crud.transaction import store_transaction
 from login import CONTRACTS_BASE_URL, HEADERS
 from schemas.contract import Contract
@@ -237,6 +238,8 @@ class Ship(BaseModel, Observable):
             try:
                 js = response.json()
                 surveys = ta.validate_python(js["data"]["surveys"])
+                for survey in surveys:
+                    store_survey(survey)
                 cooldown = ShipCooldown.model_validate(js["data"]["cooldown"])
                 self.cooldown = cooldown
                 self.update()

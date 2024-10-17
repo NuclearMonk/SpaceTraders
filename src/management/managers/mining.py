@@ -4,6 +4,7 @@ import asyncio
 from typing import Dict, List, Optional
 
 from crud.waypoint import get_waypoint_with_symbol, get_waypoints
+from management.routines.drift import Drift
 from management.routines.routine import Routine
 from management.routines.wait import WaitForArrival
 from management.ship_worker import ShipWorker
@@ -87,5 +88,5 @@ class MiningSystemManager:
         # we check if we in the wrong place
         if ship.nav.waypointSymbol != self.drone_assignment[ship.symbol]:
             #if we are in the wrong place we gotta drift
-        
+            return Drift(get_waypoint_with_symbol(self.drone_assignment[ship.symbol]))
 
