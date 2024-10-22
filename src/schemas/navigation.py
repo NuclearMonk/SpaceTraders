@@ -29,9 +29,29 @@ class WaypointChart(BaseModel):
     submittedOn: Optional[datetime] = None
 
 
+class WaypointType(str, Enum):
+    """
+    The type of waypoint.
+    """
+    PLANET = 'PLANET'
+    GAS_GIANT = 'GAS_GIANT'
+    MOON = 'MOON'
+    ORBITAL_STATION = 'ORBITAL_STATION'
+    JUMP_GATE = 'JUMP_GATE'
+    ASTEROID_FIELD = 'ASTEROID_FIELD'
+    ASTEROID = 'ASTEROID'
+    ENGINEERED_ASTEROID = 'ENGINEERED_ASTEROID'
+    ASTEROID_BASE = 'ASTEROID_BASE'
+    NEBULA = 'NEBULA'
+    DEBRIS_FIELD = 'DEBRIS_FIELD'
+    GRAVITY_WELL = 'GRAVITY_WELL'
+    ARTIFICIAL_GRAVITY_WELL = 'ARTIFICIAL_GRAVITY_WELL'
+    FUEL_STATION = 'FUEL_STATION'
+
+
 class Waypoint(BaseModel):
     symbol: str
-    type: Optional[str] = None
+    type: Optional[WaypointType] = None
     x: Optional[int] = None
     y: Optional[int] = None
     faction: Optional[WaypointFaction] = None
@@ -45,11 +65,11 @@ class Waypoint(BaseModel):
     @property
     def system_symbol(self) -> str:
         return system_symbol_from_wp_symbol(self.symbol)
-    
-    def has_trait(self, trait_symbol:str)-> bool:
+
+    def has_trait(self, trait_symbol: str) -> bool:
         return trait_symbol in set(trait.symbol for trait in self.traits)
 
-    def distance_to(self, other: Self)-> float:
+    def distance_to(self, other: Self) -> float:
         return math.sqrt((self.x-other.x)**2 + (self.y-other.y)**2)
 
 
@@ -88,7 +108,6 @@ def is_system_symbol(symbol: str) -> bool:
 
 def split_symbol(symbol: str):
     return symbol.split("-")
-
 
 
 def get_system_with_symbol(symbol: str) -> Optional[System]:

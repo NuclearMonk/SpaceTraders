@@ -3,14 +3,15 @@ from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
 import logging
-from typing import Callable, Dict, List, Optional, Tuple
-from pydantic import BaseModel, Field, TypeAdapter, ValidationError, computed_field
+from typing import Dict, List, Optional, Tuple
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from crud.contract import store_contract
 from crud.survey import store_survey
 from crud.transaction import store_transaction
 from login import CONTRACTS_BASE_URL, HEADERS
 from schemas.contract import Contract
-from schemas.market import Good, MarketTransaction
+from schemas.extraction import Extraction
+from schemas.market import TradeGood, MarketTransaction, TradeSymbol
 from schemas.navigation import Waypoint
 from utils.observable import Observable
 from schemas.survey import Survey
@@ -21,24 +22,45 @@ from custom_logging import create_ship_logger
 SHIPS_BASE_URL = 'https://api.spacetraders.io/v2/my/ships'
 
 
-class ExtractionYield(BaseModel):
-    symbol: str
-    units: int
 
+class ShipRole(str, Enum):
+    """
+    The registered role of the ship
+    """
 
-class Extraction(BaseModel):
-    shipSymbol: str
-    yield_field: ExtractionYield = Field(alias="yield")
+    FABRICATOR = 'FABRICATOR'
+    HARVESTER = 'HARVESTER'
+    HAULER = 'HAULER'
+    INTERCEPTOR = 'INTERCEPTOR'
+    EXCAVATOR = 'EXCAVATOR'
+    TRANSPORT = 'TRANSPORT'
+    REPAIR = 'REPAIR'
+    SURVEYOR = 'SURVEYOR'
+    COMMAND = 'COMMAND'
+    CARRIER = 'CARRIER'
+    PATROL = 'PATROL'
+    SATELLITE = 'SATELLITE'
+    EXPLORER = 'EXPLORER'
+    REFINERY = 'REFINERY'
 
 
 class ShipRegistration(BaseModel):
+    """
+    The public registration information of the ship
+    """
     name: str
     factionSymbol: str
-    role: str
+    role: ShipRole
 
 
 class ShipFuel(BaseModel):
+    """
+    Details of the ship's fuel tanks including how much fuel was consumed during the last transit or action.
+    """
     class ShipFuelConsumptionEvent(BaseModel):
+        """
+        An object that only shows up when an action has consumed fuel in the process. Shows the fuel consumption data.
+        """
         amount: int
         timestamp: datetime
     current: int
@@ -46,7 +68,10 @@ class ShipFuel(BaseModel):
     consumed: ShipFuelConsumptionEvent
 
 
-class ShipCooldown(BaseModel):
+class Cooldown(BaseModel):
+    """
+    A cooldown is a period of time in which a ship cannot perform certain actions.
+    """
     shipSymbol: str
     totalSeconds: timedelta
     remainingSeconds: timedelta
@@ -58,6 +83,9 @@ class ShipCooldown(BaseModel):
 
 
 class ShipNavRoute(BaseModel):
+    """
+    The routing information for the ship's most recent transit or current location.
+    """
     destination: Waypoint
     origin: Waypoint
     departureTime: datetime
@@ -69,6 +97,9 @@ class ShipNavRoute(BaseModel):
 
 
 class ShipNavStatus(str, Enum):
+    """
+    The current status of the ship
+    """
     IN_TRANSIT = "IN_TRANSIT"
     IN_ORBIT = "IN_ORBIT"
     DOCKED = "DOCKED"
@@ -78,16 +109,22 @@ class ShipNavStatus(str, Enum):
 
 
 class ShipNavFlightMode(str, Enum):
-    DRIFT = "DRIFT"
-    STEALTH = "STEALTH"
-    CRUISE = "CRUISE"
-    BURN = "BURN"
+    """
+    The ship's set speed when traveling between waypoints or systems.
+    """
+    DRIFT = 'DRIFT'
+    STEALTH = 'STEALTH'
+    CRUISE = 'CRUISE'
+    BURN = 'BURN'
 
     def __str__(self) -> str:
         return self.value
 
 
 class ShipNav(BaseModel):
+    """
+    The navigation information of the ship.
+    """
     systemSymbol: str
     waypointSymbol: str
     status: ShipNavStatus
@@ -95,11 +132,17 @@ class ShipNav(BaseModel):
     route: ShipNavRoute
 
 
-class ShipCargoItem(Good):
+class ShipCargoItem(TradeGood):
+    """
+    The type of cargo item and the number of units.
+    """
     units: int
 
 
 class ShipCargo(BaseModel):
+    """
+    Ship cargo details.
+    """
     capacity: int
     units: int
     inventory: List[ShipCargoItem]
@@ -113,54 +156,212 @@ class ShipCargo(BaseModel):
 
 
 class ShipRequirements(BaseModel):
+    """
+    The requirements for installation on a ship
+    """
     power: Optional[int] = 0
     crew: Optional[int] = 0
     slots: Optional[int] = 0
 
 
+class ShipMountSymbol(str, Enum):
+    """
+    Symbol of this mount.
+    """
+
+    MOUNT_GAS_SIPHON_I = 'MOUNT_GAS_SIPHON_I'
+    MOUNT_GAS_SIPHON_II = 'MOUNT_GAS_SIPHON_II'
+    MOUNT_GAS_SIPHON_III = 'MOUNT_GAS_SIPHON_III'
+    MOUNT_SURVEYOR_I = 'MOUNT_SURVEYOR_I'
+    MOUNT_SURVEYOR_II = 'MOUNT_SURVEYOR_II'
+    MOUNT_SURVEYOR_III = 'MOUNT_SURVEYOR_III'
+    MOUNT_SENSOR_ARRAY_I = 'MOUNT_SENSOR_ARRAY_I'
+    MOUNT_SENSOR_ARRAY_II = 'MOUNT_SENSOR_ARRAY_II'
+    MOUNT_SENSOR_ARRAY_III = 'MOUNT_SENSOR_ARRAY_III'
+    MOUNT_MINING_LASER_I = 'MOUNT_MINING_LASER_I'
+    MOUNT_MINING_LASER_II = 'MOUNT_MINING_LASER_II'
+    MOUNT_MINING_LASER_III = 'MOUNT_MINING_LASER_III'
+    MOUNT_LASER_CANNON_I = 'MOUNT_LASER_CANNON_I'
+    MOUNT_MISSILE_LAUNCHER_I = 'MOUNT_MISSILE_LAUNCHER_I'
+    MOUNT_TURRET_I = 'MOUNT_TURRET_I'
+
+
 class ShipMount(BaseModel):
-    symbol: str
+    """
+    A mount is installed on the exterier of a ship.
+    """
+    symbol: ShipMountSymbol
     name: str
     description: Optional[str]
     strength: Optional[int]
-    deposits: Optional[List[str]] = None
+    deposits: Optional[List[TradeSymbol]] = None
     requirements: ShipRequirements
 
 
-class ShipComponent(BaseModel):
-    symbol: str
+class ShipFrameSymbol(str, Enum):
+    """
+    Symbol of the frame.
+    """
+
+    FRAME_PROBE = 'FRAME_PROBE'
+    FRAME_DRONE = 'FRAME_DRONE'
+    FRAME_INTERCEPTOR = 'FRAME_INTERCEPTOR'
+    FRAME_RACER = 'FRAME_RACER'
+    FRAME_FIGHTER = 'FRAME_FIGHTER'
+    FRAME_FRIGATE = 'FRAME_FRIGATE'
+    FRAME_SHUTTLE = 'FRAME_SHUTTLE'
+    FRAME_EXPLORER = 'FRAME_EXPLORER'
+    FRAME_MINER = 'FRAME_MINER'
+    FRAME_LIGHT_FREIGHTER = 'FRAME_LIGHT_FREIGHTER'
+    FRAME_HEAVY_FREIGHTER = 'FRAME_HEAVY_FREIGHTER'
+    FRAME_TRANSPORT = 'FRAME_TRANSPORT'
+    FRAME_DESTROYER = 'FRAME_DESTROYER'
+    FRAME_CRUISER = 'FRAME_CRUISER'
+    FRAME_CARRIER = 'FRAME_CARRIER'
+
+
+class ShipFrame(BaseModel):
+    """
+    The frame of the ship. The frame determines the number of modules and mounting points of the ship, as well as base fuel capacity. As the condition of the frame takes more wear, the ship will become more sluggish and less maneuverable.
+    """
+    symbol: ShipFrameSymbol
     name: str
     description: str
     condition: float
     integrity: float
     requirements: ShipRequirements
-
-
-class ShipFrame(ShipComponent):
     moduleSlots: int
     mountingPoints: int
     fuelCapacity: int
 
 
-class ShipReactor(ShipComponent):
+class ShipReactorSymbol(str, Enum):
+    """
+    Symbol of the reactor.
+    """
+
+    REACTOR_SOLAR_I = 'REACTOR_SOLAR_I'
+    REACTOR_FUSION_I = 'REACTOR_FUSION_I'
+    REACTOR_FISSION_I = 'REACTOR_FISSION_I'
+    REACTOR_CHEMICAL_I = 'REACTOR_CHEMICAL_I'
+    REACTOR_ANTIMATTER_I = 'REACTOR_ANTIMATTER_I'
+
+
+class ShipReactor(BaseModel):
+    """
+    The reactor of the ship. The reactor is responsible for powering the ship's systems and weapons.
+    """
+    symbol: ShipReactorSymbol
+    name: str
+    description: str
+    condition: float
+    integrity: float
+    requirements: ShipRequirements
     powerOutput: int
 
 
-class ShipEngine(ShipComponent):
+class ShipEngineSymbol(str, Enum):
+    """
+    The symbol of the engine.
+    """
+
+    ENGINE_IMPULSE_DRIVE_I = 'ENGINE_IMPULSE_DRIVE_I'
+    ENGINE_ION_DRIVE_I = 'ENGINE_ION_DRIVE_I'
+    ENGINE_ION_DRIVE_II = 'ENGINE_ION_DRIVE_II'
+    ENGINE_HYPER_DRIVE_I = 'ENGINE_HYPER_DRIVE_I'
+
+
+class ShipEngine(BaseModel):
+    """
+    The engine determines how quickly a ship travels between waypoints.
+    """
+    symbol: ShipEngineSymbol
+    name: str
+    description: str
+    condition: float
+    integrity: float
+    requirements: ShipRequirements
     speed: int
 
 
+class ShipModuleSymbol(str, Enum):
+    """
+    The symbol of the module.
+    """
+
+    MODULE_MINERAL_PROCESSOR_I = 'MODULE_MINERAL_PROCESSOR_I'
+    MODULE_GAS_PROCESSOR_I = 'MODULE_GAS_PROCESSOR_I'
+    MODULE_CARGO_HOLD_I = 'MODULE_CARGO_HOLD_I'
+    MODULE_CARGO_HOLD_II = 'MODULE_CARGO_HOLD_II'
+    MODULE_CARGO_HOLD_III = 'MODULE_CARGO_HOLD_III'
+    MODULE_CREW_QUARTERS_I = 'MODULE_CREW_QUARTERS_I'
+    MODULE_ENVOY_QUARTERS_I = 'MODULE_ENVOY_QUARTERS_I'
+    MODULE_PASSENGER_CABIN_I = 'MODULE_PASSENGER_CABIN_I'
+    MODULE_MICRO_REFINERY_I = 'MODULE_MICRO_REFINERY_I'
+    MODULE_ORE_REFINERY_I = 'MODULE_ORE_REFINERY_I'
+    MODULE_FUEL_REFINERY_I = 'MODULE_FUEL_REFINERY_I'
+    MODULE_SCIENCE_LAB_I = 'MODULE_SCIENCE_LAB_I'
+    MODULE_JUMP_DRIVE_I = 'MODULE_JUMP_DRIVE_I'
+    MODULE_JUMP_DRIVE_II = 'MODULE_JUMP_DRIVE_II'
+    MODULE_JUMP_DRIVE_III = 'MODULE_JUMP_DRIVE_III'
+    MODULE_WARP_DRIVE_I = 'MODULE_WARP_DRIVE_I'
+    MODULE_WARP_DRIVE_II = 'MODULE_WARP_DRIVE_II'
+    MODULE_WARP_DRIVE_III = 'MODULE_WARP_DRIVE_III'
+    MODULE_SHIELD_GENERATOR_I = 'MODULE_SHIELD_GENERATOR_I'
+    MODULE_SHIELD_GENERATOR_II = 'MODULE_SHIELD_GENERATOR_II'
+
+
+class ShipModule(BaseModel):
+    """
+    A module can be installed in a ship and provides a set of capabilities such as storage space or quarters for crew. Module installations are permanent.
+    """
+
+    symbol: ShipModuleSymbol
+    capacity: Optional[int]
+    range: Optional[int]
+    name: str
+    description: str
+    requirements: ShipRequirements
+
+
+class Rotation(str, Enum):
+    """
+    The rotation of crew shifts. A stricter shift improves the ship's performance. A more relaxed shift improves the crew's morale.
+    """
+
+    STRICT = 'STRICT'
+    RELAXED = 'RELAXED'
+
+
+class ShipCrew(BaseModel):
+    """
+    The ship's crew service and maintain the ship's systems and equipment.
+    """
+
+    current: int
+    required: int
+    capacity: int
+    rotation: Rotation
+    morale: int
+    wages: int
+
+
 class Ship(BaseModel, Observable):
+    """
+    Ship details.
+    """
     symbol: str
     registration: ShipRegistration
     nav: ShipNav
     fuel: ShipFuel
-    cooldown: ShipCooldown
+    cooldown: Cooldown
     cargo: ShipCargo
     frame: ShipFrame
     reactor: ShipReactor
     engine: ShipEngine
     mounts: List[ShipMount]
+    modules: List[ShipModule]
+    crew: ShipCrew
 
     def model_post_init(self, __context) -> None:
         create_ship_logger(self.symbol)
@@ -240,7 +441,7 @@ class Ship(BaseModel, Observable):
                 surveys = ta.validate_python(js["data"]["surveys"])
                 for survey in surveys:
                     store_survey(survey)
-                cooldown = ShipCooldown.model_validate(js["data"]["cooldown"])
+                cooldown = Cooldown.model_validate(js["data"]["cooldown"])
                 self.cooldown = cooldown
                 self.update()
             except ValidationError as e:
@@ -274,7 +475,7 @@ class Ship(BaseModel, Observable):
         js = response.json()
         if response.ok:
             try:
-                new_cooldown = ShipCooldown.model_validate(
+                new_cooldown = Cooldown.model_validate(
                     js["data"]["cooldown"])
                 extraction = Extraction.model_validate(
                     js["data"]["extraction"])

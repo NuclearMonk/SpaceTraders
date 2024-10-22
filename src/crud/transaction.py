@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from login import engine
 from models.market import MarketTransactionModel, TradeGoodModel
-from schemas.market import Good, MarketTransaction
+from schemas.market import TradeGood, MarketTransaction
 
 
 

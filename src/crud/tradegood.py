@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from login import engine
 from models.market import TradeGoodModel
-from schemas.market import Good
+from schemas.market import TradeGood
 
 
 def get_good(symbol: str):
@@ -10,7 +10,7 @@ def get_good(symbol: str):
         return _record_to_schema(_get_trade_good(symbol, session))
 
 
-def get_good_model(good: Good, session) -> TradeGoodModel:
+def get_good_model(good: TradeGood, session) -> TradeGoodModel:
     if g := _get_trade_good(good.symbol, session):
         return g
     g = TradeGoodModel()
@@ -20,7 +20,7 @@ def get_good_model(good: Good, session) -> TradeGoodModel:
     return g
 
 
-def store_good(good: Good) -> TradeGoodModel:
+def store_good(good: TradeGood) -> TradeGoodModel:
     with Session(engine) as session:
         if g := _get_trade_good(good.symbol, session):
             return g
@@ -33,10 +33,10 @@ def store_good(good: Good) -> TradeGoodModel:
         return g
 
 
-def _record_to_schema(good: TradeGoodModel) -> Good:
+def _record_to_schema(good: TradeGoodModel) -> TradeGood:
     if not good:
         return None
-    return Good(
+    return TradeGood(
         symbol=good.symbol,
         name=good.name,
         description=good.description

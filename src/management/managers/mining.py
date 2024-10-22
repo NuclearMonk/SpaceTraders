@@ -40,7 +40,7 @@ class MiningSystemManager:
         self.mineable_wps: List[Waypoint] = wps
         self.ships_per_wp: Dict[str: ShipWorker] = {
             wp.symbol: list() for wp in self.mineable_wps}
-        self.drone_assignment : Dict[str: str] = {}
+        self.drone_assignment: Dict[str: str] = {}
 
     def drones_assigned_to(self, wp_symbol: str) -> List[ShipWorker]:
         return self.ships_per_wp.get(wp_symbol, list())
@@ -78,8 +78,8 @@ class MiningSystemManager:
         if wps:
             return wps[0]
         return None
-    
-    def __get_next_routine(self, ship: Ship)-> Optional[Routine]:
+
+    def __get_next_routine(self, ship: Ship) -> Optional[Routine]:
         # weird edge case on boot up
         if ship.nav.status == ShipNavStatus.IN_TRANSIT:
             return WaitForArrival()
@@ -87,6 +87,5 @@ class MiningSystemManager:
         # we are either in orbit somewhere or docked somewhere
         # we check if we in the wrong place
         if ship.nav.waypointSymbol != self.drone_assignment[ship.symbol]:
-            #if we are in the wrong place we gotta drift
+            # if we are in the wrong place we gotta drift
             return Drift(get_waypoint_with_symbol(self.drone_assignment[ship.symbol]))
-
