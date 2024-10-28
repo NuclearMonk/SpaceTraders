@@ -192,8 +192,8 @@ class ShipMount(BaseModel):
     """
     symbol: ShipMountSymbol
     name: str
-    description: Optional[str]
-    strength: Optional[int]
+    description: Optional[str]= None
+    strength: Optional[int]= None
     deposits: Optional[List[TradeSymbol]] = None
     requirements: ShipRequirements
 
@@ -317,11 +317,11 @@ class ShipModule(BaseModel):
     """
 
     symbol: ShipModuleSymbol
-    capacity: Optional[int]
-    range: Optional[int]
     name: str
     description: str
     requirements: ShipRequirements
+    capacity: Optional[int] = None
+    range: Optional[int] = None
 
 
 class Rotation(str, Enum):

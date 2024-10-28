@@ -8,7 +8,6 @@ from utils.utils import utcnow
 from . import Base
 
 
-
 waypoint_traits = Table(
     "waypoint_traits",
     Base.metadata,

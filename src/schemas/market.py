@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
-class TradeSymbol(Enum):
+class TradeSymbol(str, Enum):
     """
     The good's symbol.
     """

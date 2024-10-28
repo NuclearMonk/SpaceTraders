@@ -1,3 +1,4 @@
+from enum import Enum
 from login import HEADERS, SYSTEM_BASE_URL, get
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from typing import List, Optional, Self

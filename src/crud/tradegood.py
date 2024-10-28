@@ -1,8 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from login import engine
-from models.market import TradeGoodModel
-from schemas.market import TradeGood
+from models.market import TradeGoodModel, TradeSymbolModel
+from schemas.market import TradeGood, TradeSymbol
 
 
 def get_good(symbol: str):
@@ -43,5 +43,13 @@ def _record_to_schema(good: TradeGoodModel) -> TradeGood:
     )
 
 
+def _get_trade_symbol_model(symbol: TradeSymbol, session: Session) -> TradeSymbolModel:
+    if model := session.scalar(select(TradeSymbolModel).where(TradeSymbolModel.symbol == symbol)):
+        return model
+    model = TradeSymbolModel()
+    model.symbol = symbol
+    return model
+
+
 def _get_trade_good(symbol: str, session: Session) -> TradeGoodModel:
-    return session.scalars(select(TradeGoodModel).where(TradeGoodModel.symbol == symbol)).first()
+    return session.scalar(select(TradeGoodModel).where(TradeGoodModel.symbol == symbol))

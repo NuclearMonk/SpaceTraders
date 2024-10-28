@@ -1,11 +1,10 @@
 
 
-from crud.waypoint import get_waypoints, get_waypoint_with_symbol
-
-from management.managers.mining import MiningManager
 from schemas.ship import get_ship_list
-ship = get_ship_list()[0]
-mm = MiningManager()
+from crud.ship import store_ship_in_db
 
-mm.add_drone(ship)
+ships = get_ship_list()
 
+for ship in ships:
+    print(*ship.modules, sep="\n")
+    store_ship_in_db(ship)

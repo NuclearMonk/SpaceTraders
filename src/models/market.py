@@ -1,9 +1,10 @@
 from datetime import UTC
 from typing import List, Optional
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Table, Text
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.waypoint import WaypointModel
+from schemas.market import TradeSymbol
 from utils.utils import utcnow
 from . import Base
 
@@ -35,9 +36,16 @@ market_exchanges = Table(
 )
 
 
+class TradeSymbolModel(Base):
+    __tablename__ = "trade_symbols"
+    symbol: Mapped[TradeSymbol] = mapped_column(Enum(TradeSymbol), primary_key=True)
+    good: Mapped["TradeGoodModel"] = relationship()
+
+
 class TradeGoodModel(Base):
     __tablename__ = "trade_goods"
-    symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
+    symbol: Mapped[TradeSymbol] = mapped_column(
+        ForeignKey(TradeSymbolModel.symbol), primary_key=True)
     name: Mapped[str] = mapped_column(Text(30))
     description: Mapped[str] = mapped_column(Text(500))
     exporters: Mapped[List["MarketModel"]] = relationship(
@@ -61,9 +69,10 @@ class MarketModel(Base):
         secondary=market_imports, back_populates="importers")
     exchanges: Mapped[List[TradeGoodModel]] = relationship(
         secondary=market_exchanges, back_populates="exchangers")
-    transactions: Mapped[List["MarketTransactionModel"]] = relationship(back_populates="market")
+    transactions: Mapped[List["MarketTransactionModel"]
+                         ] = relationship(back_populates="market")
     time_updated = Column(DateTime(timezone=False),
-                        default=utcnow, onupdate=utcnow)
+                          default=utcnow, onupdate=utcnow)
 
     @property
     def time_updated_utc(self):
@@ -73,7 +82,8 @@ class MarketModel(Base):
 class MarketTransactionModel(Base):
     __tablename__ = "market_transactions"
     ship_symbol = mapped_column(Text(20), primary_key=True)
-    time_stamp: Mapped[DateTime] = mapped_column(DateTime(timezone=False), primary_key=True)
+    time_stamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=False), primary_key=True)
     symbol: Mapped[str] = mapped_column(
         Text(20), ForeignKey(MarketModel.symbol))
     market: Mapped[MarketModel] = relationship(back_populates="transactions")
@@ -90,8 +100,8 @@ class MarketTradeGoodModel(Base):
     __tablename__ = "market_trade_goods"
     market_symbol: Mapped[str] = mapped_column(
         Text(20), ForeignKey(MarketModel.symbol), primary_key=True)
-    good_symbol:  Mapped[str] = mapped_column(
-        Text(20), ForeignKey(TradeGoodModel.symbol), primary_key=True)
+    good_symbol:  Mapped[TradeSymbol] = mapped_column(
+        Enum(TradeSymbol), ForeignKey(TradeGoodModel.symbol), primary_key=True)
     type:  Mapped[str] = mapped_column(Text(20))
     trade_volume: Mapped[Integer] = mapped_column(Integer)
     supply: Mapped[str] = mapped_column(Text(20))
