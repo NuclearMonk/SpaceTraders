@@ -112,10 +112,10 @@ def _store_contract_in_db(contract: Contract, session: Session) -> ContractModel
 
 
 def _get_contract_from_server(id: str) -> Optional[Contract]:
-    response = get(f"{CONTRACTS_BASE_URL}/{id}", headers=HEADERS)
+    response = get(f'{CONTRACTS_BASE_URL}/{id}', headers=HEADERS)
     if response.ok:
         js = response.json()
-        return Contract.model_validate(js["data"])
+        return Contract.model_validate(js['data'])
     else:
         return None
 
@@ -123,17 +123,17 @@ def _get_all_contracts_from_server(limit=20):
     contracts: list[Contract] = []
     ta = TypeAdapter(List[Contract])
     current = 0
-    m = float("inf")
+    m = float('inf')
     page = 1
     while current < m:
         response = get(CONTRACTS_BASE_URL +
-                       f"?page={page}&limit={limit}", headers=HEADERS)
+                       f'?page={page}&limit={limit}', headers=HEADERS)
         if response.ok:
             js = response.json()
-            m = js["meta"]["total"]
-            current += len(js["data"])
+            m = js['meta']['total']
+            current += len(js['data'])
             page += 1
-            new_contracts = ta.validate_python(js["data"])
+            new_contracts = ta.validate_python(js['data'])
             contracts.extend(new_contracts)
     return contracts
 

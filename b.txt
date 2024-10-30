@@ -1,0 +1,170 @@
+{
+  "symbol": "SHOCSOARES-2",
+  "registration": {
+    "name": "SHOCSOARES-2",
+    "factionSymbol": "VOID",
+    "role": "SATELLITE"
+  },
+  "nav": {
+    "systemSymbol": "X1-Y3",
+    "waypointSymbol": "X1-Y3-H50",
+    "status": "DOCKED",
+    "flightMode": "CRUISE",
+    "route": {
+      "destination": {
+        "symbol": "X1-Y3-H50",
+        "type": "MOON",
+        "x": 45,
+        "y": 3,
+        "faction": {
+          "symbol": "VOID"
+        },
+        "traits": [
+          {
+            "symbol": "FROZEN",
+            "name": "Frozen",
+            "description": "An ice-covered world with frigid temperatures, providing unique research opportunities and resources such as ice water, ammonia ice, and other frozen compounds."
+          },
+          {
+            "symbol": "INDUSTRIAL",
+            "name": "Industrial",
+            "description": "A waypoint dominated by factories, refineries, and other heavy industries, often accompanied by pollution and a bustling workforce."
+          },
+          {
+            "symbol": "MARKETPLACE",
+            "name": "Marketplace",
+            "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
+          },
+          {
+            "symbol": "SCATTERED_SETTLEMENTS",
+            "name": "Scattered Settlements",
+            "description": "A collection of dispersed communities, each independent yet connected through trade and communication networks."
+          },
+          {
+            "symbol": "SHIPYARD",
+            "name": "Shipyard",
+            "description": "A bustling hub for the construction, repair, and sale of various spacecraft, from humble shuttles to mighty warships."
+          }
+        ],
+        "modifiers": [],
+        "orbitals": [],
+        "orbits": "X1-Y3-H49",
+        "chart": null,
+        "isUnderConstruction": null
+      },
+      "origin": {
+        "symbol": "X1-Y3-H50",
+        "type": "MOON",
+        "x": 45,
+        "y": 3,
+        "faction": {
+          "symbol": "VOID"
+        },
+        "traits": [
+          {
+            "symbol": "FROZEN",
+            "name": "Frozen",
+            "description": "An ice-covered world with frigid temperatures, providing unique research opportunities and resources such as ice water, ammonia ice, and other frozen compounds."
+          },
+          {
+            "symbol": "INDUSTRIAL",
+            "name": "Industrial",
+            "description": "A waypoint dominated by factories, refineries, and other heavy industries, often accompanied by pollution and a bustling workforce."
+          },
+          {
+            "symbol": "MARKETPLACE",
+            "name": "Marketplace",
+            "description": "A thriving center of commerce where traders from across the galaxy gather to buy, sell, and exchange goods."
+          },
+          {
+            "symbol": "SCATTERED_SETTLEMENTS",
+            "name": "Scattered Settlements",
+            "description": "A collection of dispersed communities, each independent yet connected through trade and communication networks."
+          },
+          {
+            "symbol": "SHIPYARD",
+            "name": "Shipyard",
+            "description": "A bustling hub for the construction, repair, and sale of various spacecraft, from humble shuttles to mighty warships."
+          }
+        ],
+        "modifiers": [],
+        "orbitals": [],
+        "orbits": "X1-Y3-H49",
+        "chart": null,
+        "isUnderConstruction": null
+      },
+      "departureTime": "2024-10-30T10:53:26.248000Z",
+      "arrival": "2024-10-30T10:53:26.248000Z"
+    }
+  },
+  "fuel": {
+    "current": 0,
+    "capacity": 0,
+    "consumed": {
+      "amount": 0,
+      "timestamp": "2024-10-30T10:53:26.248000Z"
+    }
+  },
+  "cooldown": {
+    "shipSymbol": "SHOCSOARES-2",
+    "totalSeconds": 0,
+    "remainingSeconds": "PT0S",
+    "expiration": "2024-10-30T14:04:11.988962Z"
+  },
+  "cargo": {
+    "capacity": 0,
+    "units": 0,
+    "inventory": []
+  },
+  "frame": {
+    "symbol": "FRAME_PROBE",
+    "name": "Probe",
+    "description": "A small, unmanned spacecraft used for exploration, reconnaissance, and scientific research.",
+    "condition": 1.0,
+    "integrity": 1.0,
+    "requirements": {
+      "power": 1,
+      "crew": 0,
+      "slots": 0
+    },
+    "moduleSlots": 0,
+    "mountingPoints": 0,
+    "fuelCapacity": 0
+  },
+  "reactor": {
+    "symbol": "REACTOR_SOLAR_I",
+    "name": "Solar Reactor I",
+    "description": "A basic solar power reactor, used to generate electricity from solar energy.",
+    "condition": 1.0,
+    "integrity": 1.0,
+    "requirements": {
+      "power": 0,
+      "crew": 0,
+      "slots": 0
+    },
+    "powerOutput": 3
+  },
+  "engine": {
+    "symbol": "ENGINE_IMPULSE_DRIVE_I",
+    "name": "Impulse Drive I",
+    "description": "A basic low-energy propulsion system that generates thrust for interplanetary travel.",
+    "condition": 1.0,
+    "integrity": 1.0,
+    "requirements": {
+      "power": 1,
+      "crew": 0,
+      "slots": 0
+    },
+    "speed": 3
+  },
+  "mounts": [],
+  "modules": [],
+  "crew": {
+    "current": 0,
+    "required": 0,
+    "capacity": 0,
+    "rotation": "STRICT",
+    "morale": 100,
+    "wages": 0
+  }
+}

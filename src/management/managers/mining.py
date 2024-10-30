@@ -35,8 +35,8 @@ class MiningSystemManager:
     def __init__(self, system_symbol: str) -> None:
         self.symbol = system_symbol
         self.drones: List[ShipWorker] = []
-        wps = get_waypoints(system_symbol, "ASTEROID")
-        wps.extend(get_waypoints(system_symbol, "ENGINEERED_ASTEROID"))
+        wps = get_waypoints(system_symbol, 'ASTEROID')
+        wps.extend(get_waypoints(system_symbol, 'ENGINEERED_ASTEROID'))
         self.mineable_wps: List[Waypoint] = wps
         self.ships_per_wp: Dict[str: ShipWorker] = {
             wp.symbol: list() for wp in self.mineable_wps}

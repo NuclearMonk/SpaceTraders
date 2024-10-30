@@ -1,5 +1,5 @@
-from datetime import UTC
-from typing import List, Optional
+from datetime import UTC, datetime
+from typing import Any, List, Optional
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,67 +10,72 @@ from . import Base
 
 
 market_exports = Table(
-    "market_exports",
+    'market_exports',
     Base.metadata,
-    Column("market_symbol", ForeignKey("markets.symbol"),
+    Column('market_symbol', ForeignKey('markets.symbol'),
            primary_key=True, type_=Text(20)),
-    Column("good_symbol", ForeignKey("trade_goods.symbol"),
+    Column('good_symbol', ForeignKey('trade_goods.symbol'),
            primary_key=True, type_=Text(20)),
 )
 market_imports = Table(
-    "market_imports",
+    'market_imports',
     Base.metadata,
-    Column("market_symbol", ForeignKey("markets.symbol"),
+    Column('market_symbol', ForeignKey('markets.symbol'),
            primary_key=True, type_=Text(20)),
-    Column("good_symbol", ForeignKey("trade_goods.symbol"),
+    Column('good_symbol', ForeignKey('trade_goods.symbol'),
            primary_key=True, type_=Text(20)),
 )
 
 market_exchanges = Table(
-    "market_exchanges",
+    'market_exchanges',
     Base.metadata,
-    Column("market_symbol", ForeignKey("markets.symbol"),
+    Column('market_symbol', ForeignKey('markets.symbol'),
            primary_key=True, type_=Text(20)),
-    Column("good_symbol", ForeignKey("trade_goods.symbol"),
+    Column('good_symbol', ForeignKey('trade_goods.symbol'),
            primary_key=True, type_=Text(20)),
 )
 
 
 class TradeSymbolModel(Base):
-    __tablename__ = "trade_symbols"
-    symbol: Mapped[TradeSymbol] = mapped_column(Enum(TradeSymbol), primary_key=True)
-    good: Mapped["TradeGoodModel"] = relationship()
+    __tablename__ = 'trade_symbols'
+    symbol: Mapped[TradeSymbol] = mapped_column(
+        Enum(TradeSymbol), primary_key=True)
+    good: Mapped['TradeGoodModel'] = relationship()
+
+    def __init__(self,symbol: TradeSymbol,**kw: Any):
+        super().__init__(**kw)
+        self.symbol = symbol
 
 
 class TradeGoodModel(Base):
-    __tablename__ = "trade_goods"
+    __tablename__ = 'trade_goods'
     symbol: Mapped[TradeSymbol] = mapped_column(
         ForeignKey(TradeSymbolModel.symbol), primary_key=True)
     name: Mapped[str] = mapped_column(Text(30))
     description: Mapped[str] = mapped_column(Text(500))
-    exporters: Mapped[List["MarketModel"]] = relationship(
-        secondary=market_exports, back_populates="exports")
-    importers: Mapped[List["MarketModel"]] = relationship(
-        secondary=market_imports, back_populates="imports")
-    exchangers: Mapped[List["MarketModel"]] = relationship(
-        secondary=market_exchanges, back_populates="exchanges")
-    trades: Mapped[List["MarketTransactionModel"]] = relationship(
-        back_populates="trade_good")
+    exporters: Mapped[List['MarketModel']] = relationship(
+        secondary=market_exports, back_populates='exports')
+    importers: Mapped[List['MarketModel']] = relationship(
+        secondary=market_imports, back_populates='imports')
+    exchangers: Mapped[List['MarketModel']] = relationship(
+        secondary=market_exchanges, back_populates='exchanges')
+    trades: Mapped[List['MarketTransactionModel']] = relationship(
+        back_populates='trade_good')
 
 
 class MarketModel(Base):
-    __tablename__ = "markets"
+    __tablename__ = 'markets'
     symbol: Mapped[str] = mapped_column(
         Text(20), ForeignKey(WaypointModel.symbol), primary_key=True)
     waypoint: Mapped[WaypointModel] = relationship()
     exports: Mapped[List[TradeGoodModel]] = relationship(
-        secondary=market_exports, back_populates="exporters")
+        secondary=market_exports, back_populates='exporters')
     imports: Mapped[List[TradeGoodModel]] = relationship(
-        secondary=market_imports, back_populates="importers")
+        secondary=market_imports, back_populates='importers')
     exchanges: Mapped[List[TradeGoodModel]] = relationship(
-        secondary=market_exchanges, back_populates="exchangers")
-    transactions: Mapped[List["MarketTransactionModel"]
-                         ] = relationship(back_populates="market")
+        secondary=market_exchanges, back_populates='exchangers')
+    transactions: Mapped[List['MarketTransactionModel']
+                         ] = relationship(back_populates='market')
     time_updated = Column(DateTime(timezone=False),
                           default=utcnow, onupdate=utcnow)
 
@@ -80,16 +85,16 @@ class MarketModel(Base):
 
 
 class MarketTransactionModel(Base):
-    __tablename__ = "market_transactions"
-    ship_symbol = mapped_column(Text(20), primary_key=True)
-    time_stamp: Mapped[DateTime] = mapped_column(
-        DateTime(timezone=False), primary_key=True)
+    __tablename__ = 'market_transactions'
+    id : Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ship_symbol = mapped_column(Text(20))
+    time_stamp: Mapped[datetime] = mapped_column()
     symbol: Mapped[str] = mapped_column(
         Text(20), ForeignKey(MarketModel.symbol))
-    market: Mapped[MarketModel] = relationship(back_populates="transactions")
+    market: Mapped[MarketModel] = relationship(back_populates='transactions')
     trade_symbol: Mapped[str] = mapped_column(
-        Text(20), ForeignKey("trade_goods.symbol"))
-    trade_good: Mapped[TradeGoodModel] = relationship(back_populates="trades")
+        Text(20), ForeignKey('trade_goods.symbol'))
+    trade_good: Mapped[TradeGoodModel] = relationship(back_populates='trades')
     type: Mapped[str] = mapped_column(Text(20))
     units: Mapped[Integer] = mapped_column(Integer)
     price_per_unit: Mapped[Integer] = mapped_column(Integer)
@@ -97,7 +102,7 @@ class MarketTransactionModel(Base):
 
 
 class MarketTradeGoodModel(Base):
-    __tablename__ = "market_trade_goods"
+    __tablename__ = 'market_trade_goods'
     market_symbol: Mapped[str] = mapped_column(
         Text(20), ForeignKey(MarketModel.symbol), primary_key=True)
     good_symbol:  Mapped[TradeSymbol] = mapped_column(

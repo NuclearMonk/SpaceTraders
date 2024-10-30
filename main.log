@@ -1,0 +1,382 @@
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-H50 HTTP/1.1" 200 1213
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-H50
+DEBUG:crud.waypoint:CACHE IS FRESH
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/agent HTTP/1.1" 200 154
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/agent HTTP/1.1" 200 154
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/agent HTTP/1.1" 200 154
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/agent HTTP/1.1" 200 154
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/agent HTTP/1.1" 200 154
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/ships HTTP/1.1" 200 5602
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): api.spacetraders.io:443
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/my/agent HTTP/1.1" 200 154
+DEBUG:crud.waypoint:Getting waypoint with symbol X1-Y3-A1
+DEBUG:crud.waypoint:ADDED NEW CACHE ROW
+DEBUG:urllib3.connectionpool:https://api.spacetraders.io:443 "GET /v2/systems//X1-Y3/waypoints/X1-Y3-A1 HTTP/1.1" 200 1276

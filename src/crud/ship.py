@@ -1,50 +1,74 @@
+from datetime import UTC, datetime
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from crud.tradegood import _get_trade_good, _get_trade_symbol_model
-from models.ship import RequirementsModel, ShipCargoItemModel, ShipCrewModel, ShipEngineModel, ShipEngineTypeModel, ShipFrameModel, ShipFrameTypeModel, ShipModel, ShipModuleTypeModel, ShipMountTypeModel, ShipReactorModel, ShipReactorTypeModel
-from schemas.ship import Ship, ShipCargoItem, ShipCrew, ShipEngine, ShipFrame, ShipModule, ShipMount, ShipReactor
+from crud.tradegood import _get_trade_good, _get_trade_symbol_model, _get_or_create_good
+from crud.waypoint import _get_waypoint, _waypoint_to_schema
+from models.ship import CooldownModel, RequirementsModel, ShipCargoItemModel, ShipCargoModel, ShipCrewModel, ShipEngineModel, ShipEngineTypeModel, ShipFrameModel, ShipFrameTypeModel, ShipFuelConsumptionEventModel, ShipFuelModel, ShipModel, ShipModuleTypeModel, ShipMountTypeModel, ShipNavModel, ShipNavRouteModel, ShipReactorModel, ShipReactorTypeModel, ShipRegistrationModel
+from schemas.market import TradeSymbol
+from schemas.ship import Cooldown, Rotation, Ship, ShipCargo, ShipCargoItem, ShipCrew, ShipEngine, ShipFrame, ShipFuel, ShipModule, ShipMount, ShipNav, ShipNavRoute, ShipReactor, ShipRegistration, ShipRequirements
 from login import engine
+from logging import getLogger
+
+from utils.utils import time_until
+
+logger = getLogger(__name__)
 
 
-def __cargo_model(ship_symbol: str, item: ShipCargoItem) -> ShipCargoItemModel:
-    model = ShipCargoItemModel()
-    model.ship_symbol = ship_symbol
-    model.trade_symbol = item.symbol
-    model.units = item.units
-    return model
-
-
-def __store_ship_in_db(ship: Ship, session: Session):
-    model = ShipModel()
-    model.symbol = ship.symbol
-    model.reg_name = ship.registration.name
-    model.reg_factionSymbol = ship.registration.factionSymbol
-    model.reg_role = ship.registration.role
-    model.nav_systemSymbol = ship.nav.systemSymbol
-    model.nav_waypointSymbol = ship.nav.waypointSymbol
-    model.nav_status = ship.nav.status
-    model.nav_flightMode = ship.nav.flightMode
-    model.nav_route_destination_symbol = ship.nav.route.destination
-    model.nav_route_origin_symbol = ship.nav.route.origin
-    model.nav_route_departure_time = ship.nav.route.departureTime
-    model.nav_route_arrival = ship.nav.route.arrival
-    model.fuel_capacity = ship.fuel.capacity
-    model.fuel_current = ship.fuel.current
-    model.cooldown_expiration = ship.cooldown.expiration
-    model.cargo_units = ship.cargo.units
-    model.cargo_capacity = ship.cargo.capacity
-    model.inventory = [__cargo_model(ship.symbol, item)
-                       for item in ship.cargo.inventory]
-    model.frame = __create_frame(ship.frame, session)
-    model.reactor = __create_reactor(ship.reactor, session)
-    model.engine = __create_engine(ship.engine, session)
+def __create_ship(ship: Ship, session: Session):
+    '''creates a given ship the database if it doesn't exist already'''
+    model = ShipModel(ship.symbol,
+                      ShipRegistrationModel(
+                          ship.registration.name,
+                          ship.registration.factionSymbol,
+                          ship.registration.role),
+                      ShipNavModel(
+                          ship.nav.systemSymbol,
+                          ship.nav.waypointSymbol,
+                          ship.nav.status,
+                          ship.nav.flightMode,
+                          ShipNavRouteModel(
+                              _get_waypoint(ship.nav.route.destination.symbol,session),
+                              _get_waypoint(ship.nav.route.origin.symbol,session),
+                              ship.nav.route.departureTime,
+                              ship.nav.route.arrival)),
+                      ShipFuelModel(ship.fuel.current,
+                                    ship.fuel.capacity,
+                                    __get_fuel_consumption(ship.fuel.consumed,
+                                                           session)),
+                      CooldownModel(ship.cooldown.totalSeconds,
+                                    ship.cooldown.expiration),
+                      ShipCargoModel(
+                          ship.cargo.units,
+                          ship.cargo.capacity,
+                          [ShipCargoItemModel(item.symbol, item.units)
+                           for item in ship.cargo.inventory]),
+                      ShipFrameModel(
+                          __get_frame_type(ship.frame, session),
+                          ship.frame.condition,
+                          ship.frame.integrity),
+                      ShipReactorModel(
+                          __get_reactor_type(ship.reactor, session),
+                          ship.reactor.condition,
+                          ship.reactor.integrity),
+                      ShipEngineModel(
+                          __get_engine_type(ship.engine, session),
+                          ship.engine.condition,
+                          ship.engine.integrity),
+                      [],
+                      [],
+                      ShipCrewModel(
+                          ship.crew.current,
+                          ship.crew.required,
+                          ship.crew.capacity,
+                          ship.crew.rotation,
+                          ship.crew.morale,
+                          ship.crew.wages))
+    session.add(model)
     model.mounts = [__get_mount_type(mount, session) for mount in ship.mounts]
     model.modules = [__get_module_type(module, session)
                      for module in ship.modules]
-    model.crew= __create_crew(ship.crew, session)
-    session.add(model)
     session.commit()
 
 
@@ -53,21 +77,23 @@ def __get_ship_from_db(ship_symbol: str, session: Session) -> Optional[ShipModel
 
 
 def __update_ship(model: ShipModel, ship: Ship, session: Session):
-    model.nav_systemSymbol = ship.nav.systemSymbol
-    model.nav_waypointSymbol = ship.nav.waypointSymbol
-    model.nav_status = ship.nav.status
-    model.nav_flightMode = ship.nav.flightMode
-    model.nav_route_destination_symbol = ship.nav.route.destination
-    model.nav_route_origin_symbol = ship.nav.route.origin
-    model.nav_route_departure_time = ship.nav.route.departureTime
-    model.nav_route_arrival = ship.nav.route.arrival
-    model.fuel_capacity = ship.fuel.capacity
-    model.fuel_current = ship.fuel.current
+    '''updates a given ship the database if it doesn't exist already'''
+    model.nav.system_symbol = ship.nav.systemSymbol
+    model.nav.waypoint_symbol = ship.nav.waypointSymbol
+    model.nav.status = ship.nav.status
+    model.nav.flight_mode = ship.nav.flightMode
+    model.nav.route.destination = _get_waypoint(ship.nav.route.destination.symbol,session)
+    model.nav.route.origin = _get_waypoint(ship.nav.route.origin.symbol,session)
+    model.nav.route.departureTime = ship.nav.route.departureTime
+    model.nav.route.arrival = ship.nav.route.arrival
+    model.fuel.capacity = ship.fuel.capacity
+    model.fuel.current = ship.fuel.current
+    model.fuel.consumed = __get_fuel_consumption(ship.fuel.consumed, session)
     model.cooldown_expiration = ship.cooldown.expiration
-    model.cargo_units = ship.cargo.units
-    model.cargo_capacity = ship.cargo.capacity
-    model.inventory = [__cargo_model(ship.symbol, item)
-                       for item in ship.cargo.inventory]
+    model.cargo.units = ship.cargo.units
+    model.cargo.capacity = ship.cargo.capacity
+    model.cargo.inventory = [__get_ship_cargo_item(item, session)
+                             for item in ship.cargo.inventory]
     model.frame.condition = ship.frame.condition
     model.frame.integrity = ship.frame.integrity
     model.reactor.condition = ship.reactor.condition
@@ -77,145 +103,248 @@ def __update_ship(model: ShipModel, ship: Ship, session: Session):
     session.commit()
 
 
-def __create_frame(frame: ShipFrame, session: Session) -> ShipFrameModel:
-    """creates the ship frame association in the database"""
-    frame_model = ShipFrameModel()
-    frame_model.frame_type = __get_frame_type(frame, session)
-    frame_model.condition = frame.condition
-    frame_model.integrity = frame.integrity
-    return frame_model
-
-
-def __create_reactor(reactor: ShipReactor, session: Session) -> ShipFrameModel:
-    """creates the ship reactor association in the database"""
-    reactor_model = ShipReactorModel()
-    reactor_model.reactor_type = __get_reactor_type(reactor, session)
-    reactor_model.condition = reactor.condition
-    reactor_model.integrity = reactor.integrity
-    return reactor_model
-
-
-def __create_engine(engine: ShipEngine, session: Session) -> ShipFrameModel:
-    """creates the ship engine association in the database"""
-    engine_model = ShipEngineModel()
-    engine_model.engine_type = __get_engine_type(engine, session)
-    engine_model.condition = engine.condition
-    engine_model.integrity = engine.integrity
-    return engine_model
-
-
-def __create_crew(crew: ShipCrew, session: Session) -> ShipCrewModel:
-    model = ShipCrewModel()
-    model.current = crew.current
-    model.required = crew.required
-    model.capacity = crew.capacity
-    model.rotation = crew.rotation
-    model.morale = crew.morale
-    model.wages = crew.wages
-    return model
-
-
 def __get_frame_type(frame: ShipFrame, session: Session) -> ShipFrameTypeModel:
-    """gets the frame type from the database\ncreates one in the database if it doesn't exist already"""
+    '''gets the frame type from the database\ncreates one in the database if it doesn't exist already'''
     if frame_type_model := session.scalar(select(ShipFrameTypeModel).where(ShipFrameTypeModel.symbol == frame.symbol)):
         return frame_type_model
-    frame_type_model = ShipFrameTypeModel()
-    frame_type_model.symbol = frame.symbol
-    frame_type_model.name = frame.name
-    frame_type_model.description = frame.description
-    frame_type_model.fuel_capacity = frame.fuelCapacity
-    frame_type_model.module_slots = frame.moduleSlots
-    frame_type_model.mounting_points = frame.mountingPoints
-    requirements = RequirementsModel()
-    requirements.crew = frame.requirements.crew
-    requirements.power = frame.requirements.power
-    requirements.slots = frame.requirements.slots
-    frame_type_model.requirements = requirements
+    frame_type_model = ShipFrameTypeModel(
+        frame.symbol,
+        frame.name,
+        frame.description,
+        frame.fuelCapacity,
+        frame.moduleSlots,
+        frame.mountingPoints,
+        RequirementsModel(frame.requirements.power,
+                          frame.requirements.crew,
+                          frame.requirements.slots))
+
     session.add(frame_type_model)
     return frame_type_model
 
 
 def __get_reactor_type(reactor: ShipReactor, session: Session) -> ShipReactorTypeModel:
-    """gets the reactor type from the database\ncreates one in the database if it doesn't exist already"""
+    '''gets the reactor type from the database\ncreates one in the database if it doesn't exist already'''
     if reactor_type_model := session.scalar(select(ShipReactorTypeModel).where(ShipReactorTypeModel.symbol == reactor.symbol)):
         return reactor_type_model
-    reactor_type_model = ShipReactorTypeModel()
-    reactor_type_model.symbol = reactor.symbol
-    reactor_type_model.name = reactor.name
-    reactor_type_model.description = reactor.description
-    reactor_type_model.power_output = reactor.powerOutput
-    requirements = RequirementsModel()
-    requirements.crew = reactor.requirements.crew
-    requirements.power = reactor.requirements.power
-    requirements.slots = reactor.requirements.slots
-    reactor_type_model.requirements = requirements
+    reactor_type_model = ShipReactorTypeModel(
+        reactor.symbol,
+        reactor.name,
+        reactor.description,
+        reactor.powerOutput,
+        RequirementsModel(
+            reactor.requirements.power,
+            reactor.requirements.crew,
+            reactor.requirements.slots))
     session.add(reactor_type_model)
     return reactor_type_model
 
 
 def __get_engine_type(engine: ShipEngine, session: Session) -> ShipEngineTypeModel:
-    """gets the engine type from the database\ncreates one in the database if it doesn't exist already"""
+    '''gets the engine type from the database\ncreates one in the database if it doesn't exist already'''
     if engine_type_model := session.scalar(select(ShipEngineTypeModel).where(ShipEngineTypeModel.symbol == engine.symbol)):
         return engine_type_model
-    engine_type_model = ShipEngineTypeModel()
-    engine_type_model.symbol = engine.symbol
-    engine_type_model.name = engine.name
-    engine_type_model.description = engine.description
-    engine_type_model.speed = engine.speed
-    requirements = RequirementsModel()
-    requirements.crew = engine.requirements.crew
-    requirements.power = engine.requirements.power
-    requirements.slots = engine.requirements.slots
-    engine_type_model.requirements = requirements
+    engine_type_model = ShipEngineTypeModel(
+        engine.symbol,
+        engine.name,
+        engine.description,
+        engine.speed,
+        RequirementsModel(
+            engine.requirements.power,
+            engine.requirements.crew,
+            engine.requirements.slots))
     session.add(engine_type_model)
     return engine_type_model
 
 
 def __get_mount_type(mount: ShipMount, session: Session) -> ShipMountTypeModel:
-    """gets the mount type from the database\ncreates one in the database if it doesn't exist already"""
+    '''gets the mount type from the database\ncreates one in the database if it doesn't exist already'''
     if mount_type_model := session.scalar(select(ShipMountTypeModel).where(ShipMountTypeModel.symbol == mount.symbol)):
         return mount_type_model
-    mount_type_model = ShipMountTypeModel()
-    mount_type_model.symbol = mount.symbol
-    mount_type_model.name = mount.name
-    mount_type_model.description = mount.description
-    mount_type_model.strength = mount.strength
-    mount_type_model.deposits = [_get_trade_symbol_model(
-        d, session) for d in mount.deposits] if mount.deposits else list()
-    requirements = RequirementsModel()
-    requirements.crew = mount.requirements.crew
-    requirements.power = mount.requirements.power
-    requirements.slots = mount.requirements.slots
-    mount_type_model.requirements = requirements
+    if mount.deposits:
+        dep = [_get_trade_symbol_model(s, session)for s in mount.deposits]
+    else:
+        dep = list()
+    mount_type_model = ShipMountTypeModel(
+        mount.symbol,
+        mount.name,
+        mount.description,
+        mount.strength,
+        dep,
+        RequirementsModel(
+            mount.requirements.power,
+            mount.requirements.crew,
+            mount.requirements.slots)
+    )
     session.add(mount_type_model)
-
     return mount_type_model
 
 
 def __get_module_type(module: ShipModule, session: Session) -> ShipModuleTypeModel:
-    """gets the module type from the database\ncreates one in the database if it doesn't exist already"""
+    '''gets the module type from the database\ncreates one in the database if it doesn't exist already'''
     if module_type_model := session.scalar(select(ShipModuleTypeModel).where(ShipModuleTypeModel.symbol == module.symbol)):
         return module_type_model
-    module_type_model = ShipModuleTypeModel()
-    module_type_model.symbol = module.symbol
-    module_type_model.name = module.name
-    module_type_model.description = module.description
-    module_type_model.capacity = module.capacity
-    module_type_model.range = module.range
-    requirements = RequirementsModel()
-    requirements.crew = module.requirements.crew
-    requirements.power = module.requirements.power
-    requirements.slots = module.requirements.slots
-    module_type_model.requirements = requirements
+    module_type_model = ShipModuleTypeModel(
+        module.symbol,
+        module.name,
+        module.description,
+        module.capacity,
+        module.range,
+        RequirementsModel(module.requirements.power,
+                          module.requirements.crew,
+                          module.requirements.slots))
     session.add(module_type_model)
     return module_type_model
 
 
-def store_ship_in_db(ship: Ship):
+def __get_fuel_consumption(fuel_consumption: ShipFuel.ShipFuelConsumptionEvent, session: Session) -> ShipFuelConsumptionEventModel:
+    if fcem := session.scalar(select(
+            ShipFuelConsumptionEventModel).where(
+            ShipFuelConsumptionEventModel.timestamp == fuel_consumption.timestamp)):
+        return fcem
+    fcem = ShipFuelConsumptionEventModel(fuel_consumption.amount,
+                                         fuel_consumption.timestamp
+                                         )
+    return fcem
+
+
+def __get_ship_cargo_item(item: ShipCargoItem, session: Session) -> ShipCargoItemModel:
+    return ShipCargoItemModel(_get_or_create_good(item, session), item.units)
+
+
+def _registration_to_schema(model: ShipRegistrationModel) -> ShipRegistration:
+    return ShipRegistration(name=model.name,
+                            factionSymbol=model.faction_symbol,
+                            role=model.role)
+
+
+def _route_to_schema(model: ShipNavRouteModel) -> ShipNavRoute:
+    return ShipNavRoute(destination=_waypoint_to_schema(model.destination),
+                        origin=_waypoint_to_schema(model.origin),
+                        departureTime=model.departure_time.replace(tzinfo=UTC),
+                        arrival=model.arrival.replace(tzinfo=UTC))
+
+
+def _nav_to_schema(model: ShipNavModel) -> ShipNav:
+    return ShipNav(systemSymbol=model.systemSymbol,
+                   waypointSymbol=model.waypointSymbol,
+                   status=model.status,
+                   flightMode=model.flightMode,
+                   route=_route_to_schema(model.route))
+
+
+def _fuel_to_schema(model: ShipFuelModel) -> ShipFuel:
+    return ShipFuel(current=model.current,
+                    capacity=model.capacity,
+                    consumed=ShipFuel.ShipFuelConsumptionEvent(amount=model.consumed.amount,
+                                                               timestamp=model.consumed.timestamp.replace(tzinfo=UTC)))
+
+
+def _cargo_to_schema(model: ShipCargoModel) -> ShipCargo:
+    return ShipCargo(capacity=model.capacity,
+                     units=model.units,
+                     inventory=[ShipCargoItem(symbol=item.good.symbol,
+                                              name=item.good.name,
+                                              description=item.good.description,
+                                              units=item.units) for item in model.inventory])
+
+
+def _requirements_to_schema(model: RequirementsModel) -> ShipRequirements:
+    return ShipRequirements(power=model.power, crew=model.crew, slots=model.slots)
+
+
+def _frame_to_schema(model: ShipFrameModel) -> ShipFrame:
+    return ShipFrame(symbol=model.frame_symbol,
+                     name=model.frame_type.name,
+                     description=model.frame_type.description,
+                     condition=model.condition,
+                     integrity=model.integrity,
+                     requirements=_requirements_to_schema(
+                         model.frame_type.requirements),
+                     moduleSlots=model.frame_type.module_slots,
+                     mountingPoints=model.frame_type.mounting_points,
+                     fuelCapacity=model.frame_type.fuel_capacity)
+
+
+def _reactor_to_schema(model: ShipReactorModel) -> ShipReactor:
+    return ShipReactor(symbol=model.reactor_symbol,
+                       name=model.reactor_type.name,
+                       description=model.reactor_type.description,
+                       condition=model.condition,
+                       integrity=model.integrity,
+                       requirements=_requirements_to_schema(
+                           model.reactor_type.requirements),
+                       powerOutput=model.reactor_type.power_output)
+
+
+def _engine_to_schema(model: ShipEngineModel) -> ShipEngine:
+    return ShipEngine(symbol=model.engine_symbol,
+                      name=model.engine_type.name,
+                      description=model.engine_type.description,
+                      condition=model.condition,
+                      integrity=model.integrity,
+                      requirements=_requirements_to_schema(
+                          model.engine_type.requirements),
+                      speed=model.engine_type.speed)
+
+
+def _mount_to_schema(model: ShipMountTypeModel) -> ShipMount:
+    return ShipMount(symbol=model.symbol,
+                     name=model.name,
+                     description=model.description,
+                     strength=model.strength,
+                     deposits=[TradeSymbol(x.symbol) for x in model.deposits],
+                     requirements=_requirements_to_schema(
+                         model.requirements))
+
+
+def _module_to_schema(model: ShipModuleTypeModel) -> ShipModule:
+    return ShipModule(symbol=model.symbol,
+                      name=model.name,
+                      description=model.description,
+                      capacity=model.capacity,
+                      range=model.range,
+                      requirements=_requirements_to_schema(
+                          model.requirements))
+
+
+def _crew_to_schema(model: ShipCrewModel) -> ShipCrew:
+    return ShipCrew(current=model.current,
+                    required=model.required,
+                    capacity=model.capacity,
+                    rotation=Rotation(model.rotation),
+                    morale=model.morale,
+                    wages=model.wages)
+
+
+def _ship_to_schema(model: ShipModel) -> Ship:
+    return Ship(symbol=model.symbol,
+         registration=_registration_to_schema(model.registration),
+         nav=_nav_to_schema(model.nav),
+         fuel=_fuel_to_schema(model.fuel),
+         cooldown=Cooldown(shipSymbol=model.symbol,
+                           totalSeconds=model.cooldown.total_seconds,
+                           remainingSeconds=time_until(
+                               model.cooldown.expiration.replace(tzinfo=UTC)),
+                           expiration=model.cooldown.expiration.replace(tzinfo=UTC)),
+         cargo=_cargo_to_schema(model.cargo),
+         frame=_frame_to_schema(model.frame),
+         reactor=_reactor_to_schema(model.reactor),
+         engine=_engine_to_schema(model.engine),
+         mounts=[_mount_to_schema(mount) for mount in model.mounts],
+         modules=[_module_to_schema(module) for module in model.modules],
+         crew=_crew_to_schema(model.crew))
+
+
+
+def create_or_update_ship(ship: Ship):
     with Session(engine) as session:
         if model := __get_ship_from_db(ship.symbol, session):
-            print("update")
             __update_ship(model, ship, session)
             return
-        print("new")
-        __store_ship_in_db(ship, session)
+        __create_ship(ship, session)
+
+def get_ship(symbol: str)-> Ship:
+    with Session(engine) as session:
+        if model := __get_ship_from_db(symbol, session):
+            return _ship_to_schema(model)
+        return None

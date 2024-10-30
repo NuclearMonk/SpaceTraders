@@ -9,4 +9,4 @@ class ExtractionYield(BaseModel):
 
 class Extraction(BaseModel):
     shipSymbol: str
-    yield_field: ExtractionYield = Field(alias="yield")
+    yield_field: ExtractionYield = Field(alias='yield')

@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 from enum import Enum
 
 class TradeSymbol(str, Enum):
-    """
+    '''
     The good's symbol.
-    """
+    '''
     PRECIOUS_STONES = 'PRECIOUS_STONES'
     QUARTZ_SAND = 'QUARTZ_SAND'
     SILICON_CRYSTALS = 'SILICON_CRYSTALS'
@@ -163,7 +163,7 @@ class MarketTransaction(BaseModel):
     waypointSymbol: str
     shipSymbol: str
     tradeSymbol: TradeSymbol
-    type_field: str = Field(alias="type")
+    type_field: str = Field(alias='type')
     units: int
     pricePerUnit: int
     totalPrice: int

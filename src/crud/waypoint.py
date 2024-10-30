@@ -1,5 +1,6 @@
 
 from datetime import UTC, timedelta
+import logging
 from typing import List, Optional
 from pydantic import ValidationError
 from sqlalchemy import select
@@ -17,40 +18,45 @@ STALE_TIME = timedelta(minutes=1)
 
 logger = getLogger(__name__)
 
+logging.basicConfig(filename='main.log', level=logging.DEBUG)
 
 def get_waypoint_with_symbol(symbol: str):
-    logger.debug(f"Getting waypoint with symbol {symbol}")
     with Session(engine) as session:
-        if wp := _get_waypoint_from_db(symbol, session):
-            if not utcnow() - wp.time_updated_utc < STALE_TIME:
-                # we refresh under construction waypoints thing may have changed
-                if wp.isUnderConstruction:
-                    logger.debug("Waypoint is under construction. Refreshing")
-                    fresh_wp = _get_waypoint_from_server(symbol)
-                    return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
-                # modifiers can change so we check for those too
-                if wp.modifiers:
-                    logger.debug("Waypoint has TRAITS so refreshing")
-                    fresh_wp = _get_waypoint_from_server(symbol)
-                    return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
-                if "UNCHARTED" in {t.symbol for t in wp.traits}:
-                    logger.debug("Waypoint is UNCHARTED so refreshing")
-                    fresh_wp = _get_waypoint_from_server(symbol)
-                    return _record_to_schema(_update_waypoint_in_db(wp, fresh_wp, session))
-            logger.debug("CACHE IS FRESH")
-            return _record_to_schema(wp)
-        logger.debug("ADDED NEW CACHE ROW")
-        fresh_wp = _get_waypoint_from_server(symbol)
-        wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
+        return _waypoint_to_schema(_get_waypoint(symbol, session))
+
+
+def _get_waypoint(symbol: str, session: Session):
+    logger.debug(f'Getting waypoint with symbol {symbol}')
+    if wp := _get_waypoint_from_db(symbol, session):
+        if not utcnow() - wp.time_updated_utc < STALE_TIME:
+            # we refresh under construction waypoints thing may have changed
+            if wp.isUnderConstruction:
+                logger.debug('Waypoint is under construction. Refreshing')
+                fresh_wp = _get_waypoint_from_server(symbol)
+                return _update_waypoint_in_db(wp, fresh_wp, session)
+            # modifiers can change so we check for those too
+            if wp.modifiers:
+                logger.debug('Waypoint has TRAITS so refreshing')
+                fresh_wp = _get_waypoint_from_server(symbol)
+                return _update_waypoint_in_db(wp, fresh_wp, session)
+            if 'UNCHARTED' in {t.symbol for t in wp.traits}:
+                logger.debug('Waypoint is UNCHARTED so refreshing')
+                fresh_wp = _get_waypoint_from_server(symbol)
+                return _update_waypoint_in_db(wp, fresh_wp, session)
+        logger.debug('CACHE IS FRESH')
         return wp
+    logger.debug('ADDED NEW CACHE ROW')
+    fresh_wp = _get_waypoint_from_server(symbol)
+    wp = _store_waypoint_in_db(fresh_wp, session)
+    return wp
 
 
 def update_waypoint_cache(wp: Waypoint) -> Waypoint:
     with Session(engine) as session:
         if db_wp := _get_waypoint_from_db(wp.symbol, session):
-            return _record_to_schema(_update_waypoint_in_db(db_wp, wp, session))
+            return _waypoint_to_schema(_update_waypoint_in_db(db_wp, wp, session))
         fresh_wp = _get_waypoint_from_server(wp.symbol)
-        wp = _record_to_schema(_store_waypoint_in_db(fresh_wp, session))
+        wp = _waypoint_to_schema(_store_waypoint_in_db(fresh_wp, session))
         return wp
 
 
@@ -59,13 +65,13 @@ def refresh_system_cache(system_symbol: str) -> None:
 
 
 def _get_waypoint_from_server(symbol: str) -> Optional[Waypoint]:
-    split_symbol = symbol.split("-")
-    system_symbol = f"{split_symbol[0]}-{split_symbol[1]}"
-    response = get(f"{SYSTEM_BASE_URL}/{system_symbol}/waypoints/{symbol}")
+    split_symbol = symbol.split('-')
+    system_symbol = f'{split_symbol[0]}-{split_symbol[1]}'
+    response = get(f'{SYSTEM_BASE_URL}/{system_symbol}/waypoints/{symbol}')
     if response.ok:
         js = response.json()
         try:
-            return Waypoint.model_validate(js["data"])
+            return Waypoint.model_validate(js['data'])
         except ValidationError as e:
             logger.warning(e)
             return None
@@ -113,7 +119,7 @@ def _store_waypoint_in_db(wp: Waypoint, session: Session) -> WaypointModel:
     return added_wp
 
 
-def _record_to_schema(wp: WaypointModel) -> Waypoint:
+def _waypoint_to_schema(wp: WaypointModel) -> Waypoint:
     if not wp:
         return None
     return Waypoint(
@@ -122,7 +128,7 @@ def _record_to_schema(wp: WaypointModel) -> Waypoint:
         x=wp.x,
         y=wp.y,
         orbits=wp.parent_symbol,
-        orbitals=[_record_to_schema(w) for w in wp.orbitals],
+        orbitals=[_waypoint_to_schema(w) for w in wp.orbitals],
         traits=[get_trait(t.symbol) for t in wp.traits],
         modifiers=[get_modifier(m.symbol) for m in wp.modifiers],
         faction=WaypointFaction(symbol=wp.faction),
@@ -138,7 +144,8 @@ def get_waypoints(system_symbol: str = None, type: str = None, trait_symbols: Li
         if type:
             stmt = stmt.where(WaypointModel.wp_type == type)
         if trait_symbols:
-            stmt = stmt.where(WaypointModel.traits.any(TraitModel.symbol.in_(trait_symbols)))
+            stmt = stmt.where(WaypointModel.traits.any(
+                TraitModel.symbol.in_(trait_symbols)))
         return [get_waypoint_with_symbol(wp.symbol) for wp in session.scalars(stmt).all()]
 
 

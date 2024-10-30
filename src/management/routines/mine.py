@@ -12,11 +12,11 @@ class Mine(Routine):
         self.look_for = frozenset(look_for)
 
     def start(self, ship: Ship):
-        ship.log("Mine: Job Started")
+        ship.log('Mine: Job Started')
         return True
 
     def end(self, ship: Ship):
-        ship.log("Mine: Job Ended")
+        ship.log('Mine: Job Ended')
         return True
 
     async def work(self, ship: Ship):
@@ -27,28 +27,28 @@ class Mine(Routine):
 
             match ship.cooldown.time_remaining.total_seconds(), ship.cargo.capacity_remaining:
                 case _, 0:  # no capacity remaining
-                    ship.log("Mine: Cargo Full")
+                    ship.log('Mine: Cargo Full')
                     if self.jettison_useless_cargo(ship) == 0:
                         # cargo is full of useful stuff
                         # we are done
                         return True
                     else:
                         # we now have more space so, we keep going
-                        ship.log("Mine: Jettisoned Cargo")
+                        ship.log('Mine: Jettisoned Cargo')
                         continue
                 case 0, _:
                     # 0 cooldown means we need to mine
                     if survey and not survey.is_valid or not survey:
-                        ship.log("Mine: Getting Fresh Survey")
+                        ship.log('Mine: Getting Fresh Survey')
                         survey = self.get_survey(ship)
                         continue
                     elif survey and survey.is_valid:
-                        ship.log("Mine: Try Extracting WITH Survey")
+                        ship.log('Mine: Try Extracting WITH Survey')
                         ship.extract(survey)
                         continue
                 case t, _ if t > 0:
                     # Any cooldown means we need to just do nothing for the duration of the cooldown
-                    ship.log(f"Mine: Waiting for Cooldown({t} seconds)")
+                    ship.log(f'Mine: Waiting for Cooldown({t} seconds)')
                     await asyncio.sleep(t)
                     continue
 

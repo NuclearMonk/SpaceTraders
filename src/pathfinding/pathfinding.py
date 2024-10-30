@@ -10,10 +10,10 @@ from utils.utils import system_symbol_from_wp_symbol
 
 
 class PathFindingWaypoint:
-    __slots__ = ["symbol", "x", "y",
-                 "has_marketplace", "nearest_market_distance"]
+    __slots__ = ['symbol', 'x', 'y',
+                 'has_marketplace', 'nearest_market_distance']
 
-    def __init__(self, symbol, x, y, has_marketplace, nearest_market_distance=float("inf")):
+    def __init__(self, symbol, x, y, has_marketplace, nearest_market_distance=float('inf')):
         self.symbol = symbol
         self.x = x
         self.y = y
@@ -32,7 +32,7 @@ def fuel_cost(A: PathFindingWaypoint, B: PathFindingWaypoint):
 
 def create_graph(waypoints: List[Waypoint])-> Dict[str, PathFindingWaypoint]:
     wps = {wp.symbol: PathFindingWaypoint(
-        wp.symbol, wp.x, wp.y, wp.has_trait("MARKETPLACE")) for wp in waypoints}
+        wp.symbol, wp.x, wp.y, wp.has_trait('MARKETPLACE')) for wp in waypoints}
     markets = [v for v in wps.values() if v.has_marketplace]
     for v in wps.values():
         markets.sort(key=lambda x: fuel_cost(v, x))

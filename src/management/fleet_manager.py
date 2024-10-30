@@ -55,14 +55,14 @@ class FleetManager:
 
 
 def find_best_job(worker:ShipWorker)-> Routine:
-    good_symbols = ["ALUMINUM_ORE", "COPPER_ORE", "IRON_ORE"]
+    good_symbols = ['ALUMINUM_ORE', 'COPPER_ORE', 'IRON_ORE']
     if worker.ship.cargo.capacity_remaining == 0:
-        if worker.ship.nav.waypointSymbol != "X1-DV3-H49":
-            return Travel(get_waypoint_with_symbol("X1-DV3-H49"))
+        if worker.ship.nav.waypointSymbol != 'X1-DV3-H49':
+            return Travel(get_waypoint_with_symbol('X1-DV3-H49'))
         goods_in_ship = {s for s  in worker.ship.cargo.items()}
         return Sell(list(goods_in_ship.intersection(good_symbols)))
-    if worker.ship.nav.waypointSymbol != "X1-DV3-XZ5D":
-        return Travel(get_market_with_symbol("X1-DV3-XZ5D"))
+    if worker.ship.nav.waypointSymbol != 'X1-DV3-XZ5D':
+        return Travel(get_market_with_symbol('X1-DV3-XZ5D'))
     return Mine(list(good_symbols))
 
 def get_ship_with_role(ships: List[Ship], role: str):

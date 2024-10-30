@@ -12,8 +12,8 @@ def utcnow():
 
 
 def system_symbol_from_wp_symbol(symbol: str):
-    sector, system, wp = symbol.split("-")
-    return f"{sector}-{system}"
+    sector, system, wp = symbol.split('-')
+    return f'{sector}-{system}'
 
 def clamp(n, m, M):
     if n < m:
@@ -29,19 +29,19 @@ def clamped_inverse_lerp[T](A: T, B: T, V: T) -> float:
 
 
 def iso_8601(time: str) -> datetime:
-    return datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ")
+    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
 
 
 def error_wrap(msg: str) -> str:
-    return f"[red]{msg}[/red]"
+    return f'[red]{msg}[/red]'
 
 
 def success_wrap(msg: str) -> str:
-    return f"[green]{msg}[/green]"
+    return f'[green]{msg}[/green]'
 
 
 def format_time_ms(time: datetime) -> str:
-    return datetime.strftime(time, "%Y-%m-%d %H:%M:%S.%f")[:-3]
+    return datetime.strftime(time, '%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 
 def time_until(t: datetime) -> timedelta:

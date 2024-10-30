@@ -15,7 +15,7 @@ def store_transaction(trans: MarketTransaction):
     with Session(engine) as session:
         _store_transaction(trans,session)
 
-def _store_transaction(trans: MarketTransaction, session)-> MarketTransactionModel:
+def _store_transaction(trans: MarketTransaction, session: Session)-> MarketTransactionModel:
     if t := _get_transaction(trans.shipSymbol, trans.timestamp, session):
         return t
     t = MarketTransactionModel()

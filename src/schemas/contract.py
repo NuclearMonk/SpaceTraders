@@ -6,9 +6,9 @@ from login import CONTRACTS_BASE_URL, HEADERS, get, post
 
 
 class ContractType(StrEnum):
-    PROCUREMENT = "PROCUREMENT"
-    TRANSPORT = "TRANSPORT"
-    SHUTTLE = "SHUTTLE"
+    PROCUREMENT = 'PROCUREMENT'
+    TRANSPORT = 'TRANSPORT'
+    SHUTTLE = 'SHUTTLE'
 
 
 class ContractPayment(BaseModel):
@@ -32,30 +32,30 @@ class ContractTerms(BaseModel):
 class Contract(BaseModel):
     id: str
     factionSymbol: str
-    contract_type: ContractType = Field(alias="type")
+    contract_type: ContractType = Field(alias='type')
     terms: ContractTerms
     accepted: bool
     fulfilled: bool
     deadlineToAccept: datetime
 
     def accept(self):
-        print(f"Accepting {self.id}")
+        print(f'Accepting {self.id}')
         self.accepted = post(
-            f"{CONTRACTS_BASE_URL}/{self.id}/accept", headers=HEADERS).ok
+            f'{CONTRACTS_BASE_URL}/{self.id}/accept', headers=HEADERS).ok
         print(self.accepted)
         return self.accepted
 
     def fulfill(self):
         self.fulfilled = post(
-            f"{CONTRACTS_BASE_URL}/{self.id}/fulfill", headers=HEADERS).ok
+            f'{CONTRACTS_BASE_URL}/{self.id}/fulfill', headers=HEADERS).ok
         return self.fulfilled
 
 
 def get_contract(id: str):
-    response = get(f"{CONTRACTS_BASE_URL}/{id}", headers=HEADERS)
+    response = get(f'{CONTRACTS_BASE_URL}/{id}', headers=HEADERS)
     if response.ok:
         print(response.json())
-        return Contract.model_validate(response.json()["data"])
+        return Contract.model_validate(response.json()['data'])
     else:
         return None
 
@@ -64,17 +64,17 @@ def get_contract(id: str):
 #     contracts: list[Contract] = []
 #     ta = TypeAdapter(List[Contract])
 #     current = 0
-#     m = float("inf")
+#     m = float('inf')
 #     page = 1
 #     while current < m:
 #         response = get(CONTRACTS_BASE_URL +
-#                        f"?page={page}&limit={limit}", headers=HEADERS)
+#                        f'?page={page}&limit={limit}', headers=HEADERS)
 #         if response.ok:
 #             js = response.json()
-#             m = js["meta"]["total"]
-#             current += len(js["data"])
+#             m = js['meta']['total']
+#             current += len(js['data'])
 #             page += 1
-#             new_contracts = ta.validate_python(js["data"])
+#             new_contracts = ta.validate_python(js['data'])
 #             contracts.extend(new_contracts)
 #     return contracts
 

@@ -7,22 +7,22 @@ from os import path
 
 DB_PATH = 'sqlite:///data/test.db'
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
-SYSTEM_BASE_URL = "https://api.spacetraders.io/v2/systems/"
-CONTRACTS_BASE_URL = "https://api.spacetraders.io/v2/my/contracts/"
-CREDENTIALS_PATH = Path("data/apikey")
-USERNAME = "shocsoares"
-FACTION = "VOID"
+SYSTEM_BASE_URL = 'https://api.spacetraders.io/v2/systems/'
+CONTRACTS_BASE_URL = 'https://api.spacetraders.io/v2/my/contracts/'
+CREDENTIALS_PATH = Path('data/apikey')
+USERNAME = 'shocsoares'
+FACTION = 'VOID'
 
 
 def register_request(username, faction):
-    register_data = {"symbol": username,
-                     "faction": faction}
+    register_data = {'symbol': username,
+                     'faction': faction}
     return post(REGISTER_URL, json=register_data)
 
 
 def store_api_key(key):
     if not path.exists(CREDENTIALS_PATH):
-        with open(CREDENTIALS_PATH, "w")as f:
+        with open(CREDENTIALS_PATH, 'w')as f:
             f.write(key)
 
 
@@ -31,7 +31,7 @@ def get_api_key():
         with open(CREDENTIALS_PATH) as f:
             return f.read().strip()
     else:
-        print("API KEY FILE  NOT FOUND")
+        print('API KEY FILE  NOT FOUND')
         return None
 
 
@@ -40,11 +40,11 @@ def register():
     if response.ok:
         data = response.json()
         print_json(data)
-        print("REGISTER SUCCESS")
-        store_api_key(data["data"]["token"])
+        print('REGISTER SUCCESS')
+        store_api_key(data['data']['token'])
     else:
         print_json(data)
-        print("REGISTER FAILED")
+        print('REGISTER FAILED')
 
 
 session = LimiterSession(per_second=2)
@@ -52,9 +52,9 @@ get = session.get
 post = session.post
 patch = session.patch
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     register()
 else:
     engine =  create_engine(DB_PATH)
     HEADERS = get_api_key()
-    HEADERS = {"Authorization": f"Bearer {HEADERS}"}
+    HEADERS = {'Authorization': f'Bearer {HEADERS}'}

@@ -31,9 +31,9 @@ class WaypointChart(BaseModel):
 
 
 class WaypointType(str, Enum):
-    """
+    '''
     The type of waypoint.
-    """
+    '''
     PLANET = 'PLANET'
     GAS_GIANT = 'GAS_GIANT'
     MOON = 'MOON'
@@ -87,28 +87,28 @@ class System(BaseModel):
         wps: list[Waypoint] = []
         ta = TypeAdapter(List[Waypoint])
         current = 0
-        m = float("inf")
+        m = float('inf')
         page = 1
         while current < m:
             response = get(SYSTEM_BASE_URL + self.symbol +
-                           f"/waypoints?{query}&page={page}&limit={limit}", headers=HEADERS)
+                           f'/waypoints?{query}&page={page}&limit={limit}', headers=HEADERS)
             if response.ok:
                 js = response.json()
-                m = js["meta"]["total"]
-                current += len(js["data"])
+                m = js['meta']['total']
+                current += len(js['data'])
                 page += 1
-                new_wps = ta.validate_python(js["data"])
+                new_wps = ta.validate_python(js['data'])
                 wps.extend(new_wps)
-                print(f"{current} out of {m}")
+                print(f'{current} out of {m}')
         return wps
 
 
 def is_system_symbol(symbol: str) -> bool:
-    return symbol.count("-") == 1
+    return symbol.count('-') == 1
 
 
 def split_symbol(symbol: str):
-    return symbol.split("-")
+    return symbol.split('-')
 
 
 def get_system_with_symbol(symbol: str) -> Optional[System]:
@@ -116,11 +116,11 @@ def get_system_with_symbol(symbol: str) -> Optional[System]:
         system_symbol = symbol
     else:
         system_symbol = system_symbol_from_wp_symbol(symbol)
-    response = get(f"{SYSTEM_BASE_URL}/{system_symbol}")
+    response = get(f'{SYSTEM_BASE_URL}/{system_symbol}')
     if response.ok:
         js = response.json()
         try:
-            return System.model_validate(js["data"])
+            return System.model_validate(js['data'])
         except ValidationError as e:
             print(e)
             return None

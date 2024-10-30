@@ -18,7 +18,7 @@ class Survey(BaseModel):
 
     @field_serializer('expiration')
     def custom_time_dump(self, expiration : datetime, _info):
-        return f"{datetime.strftime(expiration, "%Y-%m-%dT%H:%M:%S.%f")[:-3]}Z"
+        return f'{datetime.strftime(expiration, '%Y-%m-%dT%H:%M:%S.%f')[:-3]}Z'
 
     @property
     def is_valid(self)->bool:
