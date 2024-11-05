@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 from enum import Enum
 
+
 class TradeSymbol(str, Enum):
     '''
     The good's symbol.
@@ -152,30 +153,68 @@ class TradeSymbol(str, Enum):
     SHIP_SURVEYOR = 'SHIP_SURVEYOR'
 
 
-
 class TradeGood(BaseModel):
     symbol: TradeSymbol
     name: str
     description: str
 
 
+class TransactionType(str, Enum):
+    """
+    The type of transaction.
+    """
+
+    PURCHASE = 'PURCHASE'
+    SELL = 'SELL'
+
+
 class MarketTransaction(BaseModel):
     waypointSymbol: str
     shipSymbol: str
     tradeSymbol: TradeSymbol
-    type_field: str = Field(alias='type')
+    type_field: TransactionType = Field(alias='type')
     units: int
     pricePerUnit: int
     totalPrice: int
     timestamp: datetime
 
 
-class MarketTradeGood(BaseModel):
-    symbol: str
-    type: str
+class MarketTradeGoodType(str, Enum):
+    '''The type of trade good (export, import, or exchange).'''
+    EXPORT = 'EXPORT'
+    IMPORT = 'IMPORT'
+    EXCHANGE = 'EXCHANGE'
+
+
+class SupplyLevel(str, Enum):
+    """
+    The supply level of a trade good.
+    """
+
+    SCARCE = 'SCARCE'
+    LIMITED = 'LIMITED'
+    MODERATE = 'MODERATE'
+    HIGH = 'HIGH'
+    ABUNDANT = 'ABUNDANT'
+
+
+class ActivityLevel(str, Enum):
+    """
+    The activity level of a trade good. If the good is an import, this represents how strong consumption is. If the good is an export, this represents how strong the production is for the good. When activity is strong, consumption or production is near maximum capacity. When activity is weak, consumption or production is near minimum capacity.
+    """
+
+    WEAK = 'WEAK'
+    GROWING = 'GROWING'
+    STRONG = 'STRONG'
+    RESTRICTED = 'RESTRICTED'
+
+
+class   MarketTradeGood(BaseModel):
+    symbol: TradeSymbol
+    type: MarketTradeGoodType
     tradeVolume: int
-    supply: str
-    activity: Optional[str] = None
+    supply: SupplyLevel
+    activity: Optional[ActivityLevel] = None
     purchasePrice: int
     sellPrice: int
 
@@ -187,3 +226,4 @@ class Market(BaseModel):
     exchange: List[TradeGood]
     transactions: Optional[List[MarketTransaction]] = None
     tradeGoods: Optional[List[MarketTradeGood]] = None
+    last_updated: Optional[datetime] = None

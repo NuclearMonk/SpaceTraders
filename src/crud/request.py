@@ -7,12 +7,13 @@ from login import engine
 from models.request import RequestModel, ResponseModel
 
 
-def store_request(method: str, url: str, body: Optional[str]= None) -> int:
+def store_request(method: str, url: str, body: Optional[str] = None, params: Optional[str] = None) -> int:
     with Session(engine) as session:
         req = RequestModel()
         req.method = method
         req.url = url
         req.body = body
+        req.params = params
         session.add(req)
         session.commit()
         return req.id

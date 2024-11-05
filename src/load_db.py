@@ -1,9 +1,8 @@
 import argparse
-import pprint
 from typing import Optional
 
 from pydantic import ValidationError
-from crud import get_waypoint_with_symbol, get_market_with_symbol, get_all_contracts, refresh_contract_cache, get_open_contracts
+from crud import get_waypoint_with_symbol, refresh_contract_cache
 from schemas.navigation import System, is_system_symbol
 from utils.utils import system_symbol_from_wp_symbol
 from login import SYSTEM_BASE_URL, get
@@ -33,7 +32,7 @@ if __name__ == '__main__':
         system = get_system_with_symbol(args.symbol)
         for waypoint in system.waypoints:
             wp = get_waypoint_with_symbol(waypoint.symbol)
-            if wp.has_trait('MARKETPLACE'):
-                get_market_with_symbol(wp.symbol)
+            #if wp.has_trait('MARKETPLACE'):
+                #get_market_with_symbol(wp.symbol)
 
 

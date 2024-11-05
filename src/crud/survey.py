@@ -9,7 +9,7 @@ from utils.utils import utcnow
 
 
 
-def store_survey(survey: Survey) -> SurveyModel:
+def store_survey(survey: Survey) -> Survey:
     with Session(engine) as session:
         new_survey = SurveyModel()
         new_survey.signature = survey.signature
@@ -19,14 +19,14 @@ def store_survey(survey: Survey) -> SurveyModel:
         new_survey.deposits = [_store_deposit(sd) for sd in survey.deposits]
         session.add(new_survey)
         session.commit()
-        return new_survey
+        return _survey_to_schema(new_survey)
 
 def get_valid_surveys(symbol: str):
     with Session(engine) as session:
         stmt =select(SurveyModel).where(SurveyModel.symbol == symbol, SurveyModel.expiration < utcnow())
-        return [_record_to_schema(survey) for survey in session.scalars(stmt).all()]
+        return [_survey_to_schema(survey) for survey in session.scalars(stmt).all()]
 
-def _record_to_schema(survey: SurveyModel) -> Survey:
+def _survey_to_schema(survey: SurveyModel) -> Survey:
     if not Survey:
         return None
     return Survey(signature=survey.signature,

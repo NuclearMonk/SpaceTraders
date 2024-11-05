@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models.market import TradeGoodModel, TradeSymbolModel
 from models.waypoint import WaypointModel
+from schemas.faction import FactionSymbol
 from schemas.market import TradeSymbol
 from schemas.ship import Rotation, ShipEngineSymbol, ShipFrameSymbol, ShipModuleSymbol, ShipMountSymbol, ShipNavFlightMode, ShipNavStatus, ShipReactorSymbol, ShipRole
 
@@ -200,12 +201,12 @@ class ShipRegistrationModel(Base):
         ShipModel.symbol), primary_key=True)
     ship: Mapped[ShipModel] = relationship(back_populates='registration')
     name: Mapped[str] = mapped_column(Text(20))
-    faction_symbol: Mapped[str] = mapped_column(Text(20))
+    faction_symbol: Mapped[FactionSymbol] = mapped_column(Enum(FactionSymbol))
     role: Mapped[ShipRole] = mapped_column(Enum(ShipRole))
 
     def __init__(self,
                  name: str,
-                 faction_symbol: str,
+                 faction_symbol: FactionSymbol,
                  role: ShipRole, **kw: Any):
         super().__init__(**kw)
         self.name = name

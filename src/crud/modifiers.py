@@ -4,10 +4,11 @@ from schemas.navigation import WaypointModifier
 from sqlalchemy.orm import Session
 
 def get_modifier(symbol: str):
-    return _record_to_schema(_get_modifier(symbol))
+    with Session(engine) as session:
+        return _modifier_to_schema(_get_modifier(symbol, session))
 
 
-def store_modifier(trait: WaypointModifier, session: Session) -> ModifierModel:
+def _store_modifier(trait: WaypointModifier, session: Session) -> ModifierModel:
     if t := _get_modifier(trait.symbol):
         return t
     t = ModifierModel()
@@ -19,12 +20,11 @@ def store_modifier(trait: WaypointModifier, session: Session) -> ModifierModel:
     return t
 
 
-def _get_modifier(symbol: str):
-    with Session(engine) as session:
-        return session.query(ModifierModel).filter(ModifierModel.symbol == symbol).first()
+def _get_modifier(symbol: str, session: Session):
+    return session.query(ModifierModel).filter(ModifierModel.symbol == symbol).first()
 
 
-def _record_to_schema(record: ModifierModel) -> WaypointModifier:
+def _modifier_to_schema(record: ModifierModel) -> WaypointModifier:
     if not record:
         return None
     return WaypointModifier(

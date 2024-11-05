@@ -1,10 +1,12 @@
 from typing import List
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Text
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
 from models.market import TradeGoodModel
 from models.waypoint import WaypointModel
+from schemas.faction import FactionSymbol
+from schemas.market import TradeSymbol
 
 
 class ContractDeliveryModel(Base):
@@ -15,9 +17,10 @@ class ContractDeliveryModel(Base):
         Text(20), ForeignKey('contracts.id'))
     contract: Mapped['ContractModel'] = relationship(back_populates='deliver')
     delivery_symbol: Mapped[str] = mapped_column(
-        Text(20), ForeignKey('waypoints.symbol'))
-    trade_symbol: Mapped[str] =mapped_column(
-        Text(20), ForeignKey('trade_goods.symbol'))
+        Text(20), ForeignKey(WaypointModel.symbol))
+    delivery_wp :Mapped[WaypointModel] = relationship()
+    trade_symbol: Mapped[TradeSymbol] =mapped_column(
+        Text(20), ForeignKey(TradeGoodModel.symbol))
     required: Mapped[int] = mapped_column(Integer)
     fulfilled: Mapped[int] = mapped_column(Integer)
 
@@ -25,7 +28,7 @@ class ContractDeliveryModel(Base):
 class ContractModel(Base):
     __tablename__ = 'contracts'
     id: Mapped[str] = mapped_column(Text(20), primary_key=True)
-    faction_symbol: Mapped[str] = mapped_column(Text(20))
+    faction_symbol: Mapped[FactionSymbol] = mapped_column(Enum(FactionSymbol))
     contract_type: Mapped[str] = mapped_column(Text(20))
     terms_deadline = Column(DateTime(timezone=False))
     terms_pay_accepted: Mapped[int] = mapped_column(Integer)

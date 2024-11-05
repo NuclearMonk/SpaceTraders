@@ -7,19 +7,8 @@ from schemas.market import TradeGood, TradeSymbol
 
 def get_good(symbol: TradeSymbol):
     with Session(engine) as session:
-        return _record_to_schema(_get_trade_good(symbol, session))
+        return _good_to_schema(_get_trade_good(symbol, session))
 
-
-def get_good_model(good: TradeGood, session) -> TradeGoodModel:
-    """gets a good from the database, if it doesn't exist, creates it """
-
-    if g := _get_trade_good(good.symbol, session):
-        return g
-    g = TradeGoodModel()
-    g.symbol = good.symbol
-    g.name = good.name
-    g.description = good.description
-    return g
 
 
 def get_or_create_good(good: TradeGood) -> TradeGoodModel:
@@ -40,7 +29,7 @@ def _get_or_create_good(good: TradeGood, session: Session) -> TradeGoodModel:
     return g
 
 
-def _record_to_schema(good: TradeGoodModel) -> TradeGood:
+def _good_to_schema(good: TradeGoodModel) -> TradeGood:
     if not good:
         return None
     return TradeGood(
@@ -57,6 +46,6 @@ def _get_trade_symbol_model(symbol: TradeSymbol, session: Session) -> TradeSymbo
 
 
 def _get_trade_good(symbol: TradeSymbol, session: Session) -> TradeGoodModel:
-    if model := _get_trade_symbol_model(symbol, session):
-        return model.good
+    if model := session.scalar(select(TradeGoodModel).where(TradeGoodModel.symbol == symbol)):
+        return model
     return None

@@ -2,7 +2,6 @@ import asyncio
 import logging
 from typing import List
 from crud.contract import refresh_contract_cache
-from crud.market import get_market_with_symbol
 from crud.waypoint import get_waypoint_with_symbol, refresh_system_cache
 from management.routines.routine import Routine
 from management.routines.mine import Mine
@@ -10,6 +9,7 @@ from management.routines.sell import Sell
 from management.routines.travel import Travel
 from management.ship_worker import ShipWorker
 from schemas.ship import Ship, get_ship_list
+from st_requests.market import get_market
 logger = logging.getLogger(__name__)
 
 
@@ -62,7 +62,7 @@ def find_best_job(worker:ShipWorker)-> Routine:
         goods_in_ship = {s for s  in worker.ship.cargo.items()}
         return Sell(list(goods_in_ship.intersection(good_symbols)))
     if worker.ship.nav.waypointSymbol != 'X1-DV3-XZ5D':
-        return Travel(get_market_with_symbol('X1-DV3-XZ5D'))
+        return Travel(get_market('X1-DV3-XZ5D'))
     return Mine(list(good_symbols))
 
 def get_ship_with_role(ships: List[Ship], role: str):

@@ -5,7 +5,7 @@ from pathlib import Path
 from os import path
 
 
-DB_PATH = 'sqlite:///data/test.db'
+DB_PATH = 'sqlite:///data/space_traders.db'
 REGISTER_URL = 'https://api.spacetraders.io/v2/register'
 SYSTEM_BASE_URL = 'https://api.spacetraders.io/v2/systems/'
 CONTRACTS_BASE_URL = 'https://api.spacetraders.io/v2/my/contracts/'

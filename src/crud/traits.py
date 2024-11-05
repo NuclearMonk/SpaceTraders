@@ -5,12 +5,12 @@ from schemas.navigation import WaypointTrait
 from sqlalchemy.orm import Session
 
 
-def get_trait(symbol: str):
+def _get_trait(symbol: str):
     with Session(engine) as session:
-        return _record_to_schema(_get_trait(symbol, session))
+        return _trait_to_schema(_get_trait(symbol, session))
 
 
-def store_trait(trait: WaypointTrait, session: Session) -> TraitModel:
+def _store_trait(trait: WaypointTrait, session: Session) -> TraitModel:
     if t := _get_trait(trait.symbol, session):
         return t
     t = TraitModel()
@@ -26,7 +26,7 @@ def _get_trait(symbol: str, session: Session):
     return session.scalars(select(TraitModel).where(TraitModel.symbol == symbol)).first()
 
 
-def _record_to_schema(record: TraitModel) -> WaypointTrait:
+def _trait_to_schema(record: TraitModel) -> WaypointTrait:
     if not record:
         return None
     return WaypointTrait(

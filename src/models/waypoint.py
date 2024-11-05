@@ -3,6 +3,9 @@ from typing import List, Optional
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from models.system import SystemModel
+from schemas.faction import FactionSymbol
+from schemas.navigation import WaypointModifierSymbol, WaypointTraitSymbol
 from utils.utils import utcnow
 
 from . import Base
@@ -29,7 +32,7 @@ waypoint_modifiers = Table(
 
 class ModifierModel(Base):
     __tablename__ = 'modifiers'
-    symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
+    symbol: Mapped[WaypointModifierSymbol] = mapped_column(Text(20), primary_key=True)
     name: Mapped[str] = mapped_column(Text(30))
     description: Mapped[str] = mapped_column(Text(500))
     waypoints: Mapped[List['WaypointModel']] = relationship(
@@ -38,7 +41,7 @@ class ModifierModel(Base):
 
 class TraitModel(Base):
     __tablename__ = 'traits'
-    symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
+    symbol: Mapped[WaypointTraitSymbol] = mapped_column(Text(20), primary_key=True)
     name: Mapped[str] = mapped_column(Text(30))
     description: Mapped[str] = mapped_column(Text(500))
     waypoints: Mapped[List['WaypointModel']] = relationship(
@@ -48,14 +51,15 @@ class TraitModel(Base):
 class WaypointModel(Base):
     __tablename__ = 'waypoints'
     symbol: Mapped[str] = mapped_column(Text(20), primary_key=True)
-    system_symbol: Mapped[str] = mapped_column(Text(20))
+    system_symbol: Mapped[str] = mapped_column(ForeignKey('systems.symbol'))
+    system: Mapped[SystemModel] = relationship(back_populates="waypoints")
     wp_type: Mapped[str] = mapped_column(Text(20))
     x: Mapped[int] = mapped_column(Integer)
     y: Mapped[int] = mapped_column(Integer)
     isUnderConstruction: Mapped[Optional[bool]] = mapped_column(Boolean)
     parent_symbol: Mapped[Optional[str]] = mapped_column(
         Text(20), ForeignKey('waypoints.symbol'))
-    faction: Mapped[Optional[str]] = mapped_column(Text(20))
+    faction: Mapped[Optional[FactionSymbol]] = mapped_column(Text(20))
     orbits: Mapped['WaypointModel'] = relationship(back_populates='orbitals')
     orbitals: Mapped[List['WaypointModel']] = relationship(
         back_populates='orbits', remote_side=[symbol], uselist=True, lazy='subquery')

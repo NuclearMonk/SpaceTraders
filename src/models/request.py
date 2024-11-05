@@ -13,6 +13,7 @@ class RequestModel(Base):
     url: Mapped[str] = mapped_column(Text)
     method: Mapped[str] = mapped_column(Text)
     body: Mapped[Optional[str]] = mapped_column(Text)
+    params: Mapped[Optional[str]] = mapped_column(Text)
     response: Mapped['ResponseModel'] = relationship(back_populates='request')
     timestamp: Mapped[DateTime] = mapped_column(
         DateTime(False), default=utcnow)

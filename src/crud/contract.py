@@ -1,65 +1,31 @@
-from typing import List, Optional
 
-from pydantic import TypeAdapter
+from logging import getLogger
 from sqlalchemy import select
-from crud.tradegood import get_good
-from crud.waypoint import get_waypoint_with_symbol
-from login import HEADERS, SYSTEM_BASE_URL, CONTRACTS_BASE_URL, engine, get
+from login import engine
 from models.contract import ContractDeliveryModel, ContractModel
 from schemas.contract import Contract, ContractDelivery, ContractPayment, ContractTerms
 from sqlalchemy.orm import Session
 
+logger = getLogger(__name__)
 
-def store_contract(contract: Contract):
-    with Session(engine) as session:
-        if db_contract := _get_contract_from_db(id, session):
-            _update_contract_in_db(db_contract, contract)
-        else:
-            _store_contract_in_db(contract, session)
-
-
-def get_contract(id: str):
-    with Session(engine) as session:
-        if contract := _get_contract_from_db(id, session):
-            return _record_to_schema(contract)
-        fresh_contract = _get_contract_from_server(id)
-        contract = _record_to_schema(
-            _store_contract_in_db(fresh_contract, session))
-        return contract
-
-
-def get_all_contracts():
-    with Session(engine) as session:
-        return [_record_to_schema(c) for c in session.scalars(select(ContractModel)).all()]
-
-
-def get_open_contracts():
-    with Session(engine) as session:
-        return [_record_to_schema(c) for c in session.scalars(select(ContractModel).where(ContractModel.fulfilled == False)).all()]
-
-
-def update_contract(contract: Contract):
+def create_update_contract(contract: Contract) -> Contract:
     with Session(engine) as session:
         if db_contract := _get_contract_from_db(contract.id, session):
-            _update_contract_in_db(db_contract, contract)
-        else:
-            _store_contract_in_db(contract, session)
+            return _contract_to_schema(_update_contract_in_db(db_contract, contract))
+        return _contract_to_schema(_store_contract_in_db(contract, session))
 
 
-def refresh_contract_cache():
-    contracts = _get_all_contracts_from_server()
+def get_contract_from_db(id: str):
+    logger.info(f"getting contract from db with id: {id}")
     with Session(engine) as session:
-        for contract in contracts:
-            if db_contract := _get_contract_from_db(contract.id, session):
-                _update_contract_in_db(db_contract, contract, session)
-            else:
-                _store_contract_in_db(contract, session)
+        return _get_contract_from_db(id, session)
+
+def get_open_contracts_db():
+    with Session(engine) as session:
+        return [_contract_to_schema(c) for c in session.scalars(select(ContractModel).where(ContractModel.fulfilled == False)).all()]
 
 
-
-
-
-def _record_to_schema(contract: ContractModel) -> Contract:
+def _contract_to_schema(contract: ContractModel) -> Contract:
     if not contract:
         return None
     return Contract(
@@ -110,32 +76,6 @@ def _store_contract_in_db(contract: Contract, session: Session) -> ContractModel
     session.commit()
     return new_contract
 
-
-def _get_contract_from_server(id: str) -> Optional[Contract]:
-    response = get(f'{CONTRACTS_BASE_URL}/{id}', headers=HEADERS)
-    if response.ok:
-        js = response.json()
-        return Contract.model_validate(js['data'])
-    else:
-        return None
-
-def _get_all_contracts_from_server(limit=20):
-    contracts: list[Contract] = []
-    ta = TypeAdapter(List[Contract])
-    current = 0
-    m = float('inf')
-    page = 1
-    while current < m:
-        response = get(CONTRACTS_BASE_URL +
-                       f'?page={page}&limit={limit}', headers=HEADERS)
-        if response.ok:
-            js = response.json()
-            m = js['meta']['total']
-            current += len(js['data'])
-            page += 1
-            new_contracts = ta.validate_python(js['data'])
-            contracts.extend(new_contracts)
-    return contracts
 
 def _get_contract_from_db(id: str, session: Session):
     return session.scalars(select(ContractModel).where(ContractModel.id == id)).first()

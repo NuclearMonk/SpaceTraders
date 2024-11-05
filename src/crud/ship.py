@@ -1,9 +1,9 @@
-from datetime import UTC, datetime
+from datetime import UTC
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from crud.tradegood import _get_trade_good, _get_trade_symbol_model, _get_or_create_good
+from crud.tradegood import _get_trade_symbol_model, _get_or_create_good
 from crud.waypoint import _get_waypoint, _waypoint_to_schema
 from models.ship import CooldownModel, RequirementsModel, ShipCargoItemModel, ShipCargoModel, ShipCrewModel, ShipEngineModel, ShipEngineTypeModel, ShipFrameModel, ShipFrameTypeModel, ShipFuelConsumptionEventModel, ShipFuelModel, ShipModel, ShipModuleTypeModel, ShipMountTypeModel, ShipNavModel, ShipNavRouteModel, ShipReactorModel, ShipReactorTypeModel, ShipRegistrationModel
 from schemas.market import TradeSymbol
@@ -16,7 +16,7 @@ from utils.utils import time_until
 logger = getLogger(__name__)
 
 
-def __create_ship(ship: Ship, session: Session):
+def __create_ship(ship: Ship, session: Session) -> ShipModel:
     '''creates a given ship the database if it doesn't exist already'''
     model = ShipModel(ship.symbol,
                       ShipRegistrationModel(
@@ -29,8 +29,10 @@ def __create_ship(ship: Ship, session: Session):
                           ship.nav.status,
                           ship.nav.flightMode,
                           ShipNavRouteModel(
-                              _get_waypoint(ship.nav.route.destination.symbol,session),
-                              _get_waypoint(ship.nav.route.origin.symbol,session),
+                              _get_waypoint(
+                                  ship.nav.route.destination.symbol, session),
+                              _get_waypoint(
+                                  ship.nav.route.origin.symbol, session),
                               ship.nav.route.departureTime,
                               ship.nav.route.arrival)),
                       ShipFuelModel(ship.fuel.current,
@@ -41,9 +43,8 @@ def __create_ship(ship: Ship, session: Session):
                                     ship.cooldown.expiration),
                       ShipCargoModel(
                           ship.cargo.units,
-                          ship.cargo.capacity,
-                          [ShipCargoItemModel(item.symbol, item.units)
-                           for item in ship.cargo.inventory]),
+                          ship.cargo.capacity, []
+                      ),
                       ShipFrameModel(
                           __get_frame_type(ship.frame, session),
                           ship.frame.condition,
@@ -66,24 +67,29 @@ def __create_ship(ship: Ship, session: Session):
                           ship.crew.morale,
                           ship.crew.wages))
     session.add(model)
+    ship.cargo.inventory = [__get_ship_cargo_item(item, session)
+                            for item in ship.cargo.inventory]
     model.mounts = [__get_mount_type(mount, session) for mount in ship.mounts]
     model.modules = [__get_module_type(module, session)
                      for module in ship.modules]
     session.commit()
+    return model
 
 
 def __get_ship_from_db(ship_symbol: str, session: Session) -> Optional[ShipModel]:
     return session.scalar(select(ShipModel).where(ShipModel.symbol == ship_symbol))
 
 
-def __update_ship(model: ShipModel, ship: Ship, session: Session):
+def __update_ship(model: ShipModel, ship: Ship, session: Session) -> ShipModel:
     '''updates a given ship the database if it doesn't exist already'''
     model.nav.system_symbol = ship.nav.systemSymbol
     model.nav.waypoint_symbol = ship.nav.waypointSymbol
     model.nav.status = ship.nav.status
     model.nav.flight_mode = ship.nav.flightMode
-    model.nav.route.destination = _get_waypoint(ship.nav.route.destination.symbol,session)
-    model.nav.route.origin = _get_waypoint(ship.nav.route.origin.symbol,session)
+    model.nav.route.destination = _get_waypoint(
+        ship.nav.route.destination.symbol, session)
+    model.nav.route.origin = _get_waypoint(
+        ship.nav.route.origin.symbol, session)
     model.nav.route.departureTime = ship.nav.route.departureTime
     model.nav.route.arrival = ship.nav.route.arrival
     model.fuel.capacity = ship.fuel.capacity
@@ -101,6 +107,7 @@ def __update_ship(model: ShipModel, ship: Ship, session: Session):
     model.engine.condition = ship.engine.condition
     model.engine.integrity = ship.engine.integrity
     session.commit()
+    return model
 
 
 def __get_frame_type(frame: ShipFrame, session: Session) -> ShipFrameTypeModel:
@@ -318,22 +325,22 @@ def _crew_to_schema(model: ShipCrewModel) -> ShipCrew:
 
 def _ship_to_schema(model: ShipModel) -> Ship:
     return Ship(symbol=model.symbol,
-         registration=_registration_to_schema(model.registration),
-         nav=_nav_to_schema(model.nav),
-         fuel=_fuel_to_schema(model.fuel),
-         cooldown=Cooldown(shipSymbol=model.symbol,
-                           totalSeconds=model.cooldown.total_seconds,
-                           remainingSeconds=time_until(
-                               model.cooldown.expiration.replace(tzinfo=UTC)),
-                           expiration=model.cooldown.expiration.replace(tzinfo=UTC)),
-         cargo=_cargo_to_schema(model.cargo),
-         frame=_frame_to_schema(model.frame),
-         reactor=_reactor_to_schema(model.reactor),
-         engine=_engine_to_schema(model.engine),
-         mounts=[_mount_to_schema(mount) for mount in model.mounts],
-         modules=[_module_to_schema(module) for module in model.modules],
-         crew=_crew_to_schema(model.crew))
-
+                registration=_registration_to_schema(model.registration),
+                nav=_nav_to_schema(model.nav),
+                fuel=_fuel_to_schema(model.fuel),
+                cooldown=Cooldown(shipSymbol=model.symbol,
+                                  totalSeconds=model.cooldown.total_seconds,
+                                  remainingSeconds=time_until(
+                                      model.cooldown.expiration.replace(tzinfo=UTC)),
+                                  expiration=model.cooldown.expiration.replace(tzinfo=UTC)),
+                cargo=_cargo_to_schema(model.cargo),
+                frame=_frame_to_schema(model.frame),
+                reactor=_reactor_to_schema(model.reactor),
+                engine=_engine_to_schema(model.engine),
+                mounts=[_mount_to_schema(mount) for mount in model.mounts],
+                modules=[_module_to_schema(module)
+                         for module in model.modules],
+                crew=_crew_to_schema(model.crew))
 
 
 def create_or_update_ship(ship: Ship):
@@ -343,7 +350,14 @@ def create_or_update_ship(ship: Ship):
             return
         __create_ship(ship, session)
 
-def get_ship(symbol: str)-> Ship:
+
+def update_ship(ship: Ship):
+    with Session(engine) as session:
+        if model := __get_ship_from_db(ship.symbol, session):
+            __update_ship(model, ship, session)
+
+
+def get_ship(symbol: str) -> Ship:
     with Session(engine) as session:
         if model := __get_ship_from_db(symbol, session):
             return _ship_to_schema(model)

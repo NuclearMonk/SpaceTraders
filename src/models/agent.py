@@ -1,9 +1,10 @@
 from typing import Any
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Text
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
 from models.waypoint import WaypointModel
+from schemas.faction import FactionSymbol
 from utils.utils import utcnow
 
 
@@ -15,7 +16,7 @@ class AgentModel(Base):
     headquarters_symbol = Column(Text(20), ForeignKey(WaypointModel.symbol))
     headquarters: Mapped[WaypointModel] = relationship()
     credits: Mapped[int] = mapped_column(Integer)
-    starting_faction: Mapped[str] = mapped_column(Text(20))
+    starting_faction: Mapped[FactionSymbol] = mapped_column(Enum(FactionSymbol))
     ship_count: Mapped[int] = mapped_column(Integer)
     timestamp: Mapped[DateTime] = Column(DateTime(timezone=False),
                                          default=utcnow)
@@ -24,7 +25,7 @@ class AgentModel(Base):
                  symbol:str,
                  headquarters: WaypointModel,
                  credits: int,
-                 starting_faction: str, ship_count: int, **kw: Any):
+                 starting_faction: FactionSymbol, ship_count: int, **kw: Any):
         super().__init__(**kw)
         self.symbol = symbol
         self.headquarters = headquarters

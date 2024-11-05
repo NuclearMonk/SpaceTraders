@@ -6,20 +6,23 @@ from models.agent import AgentModel
 from schemas.agent import Agent
 from login import engine
 
-def _agent_to_schema(model: AgentModel)-> Agent:
+
+def _agent_to_schema(model: AgentModel) -> Agent:
     return Agent(symbol=model.symbol,
                  headquarters=model.headquarters_symbol,
                  credits=model.credits,
-                 startingFaction= model.starting_faction,
+                 startingFaction=model.starting_faction,
                  shipCount=model.ship_count)
 
 
-def create_agent(agent: Agent)->AgentModel:
+def create_agent(agent: Agent) -> Agent:
     with Session(engine) as session:
-        session.add(AgentModel(agent.symbol,
-            _get_waypoint(agent.headquarters, session),
-            agent.credits,
-            agent.startingFaction,
-            agent.shipCount
-        ))
+        model= AgentModel(agent.symbol,
+                               _get_waypoint(agent.headquarters, session),
+                               agent.credits,
+                               agent.startingFaction,
+                               agent.shipCount
+                               )
+        session.add(model)
         session.commit()
+        return _agent_to_schema(model)

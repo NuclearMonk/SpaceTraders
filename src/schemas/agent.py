@@ -1,6 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel
 
+from schemas.faction import FactionSymbol
+
 
 class Agent(BaseModel):
     """
@@ -10,5 +12,5 @@ class Agent(BaseModel):
     symbol: str
     headquarters: str
     credits: int
-    startingFaction: str
+    startingFaction: FactionSymbol
     shipCount: int
