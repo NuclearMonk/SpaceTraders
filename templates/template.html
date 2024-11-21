@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+<style>
+     @font-face {
+    font-family: "Departure";
+    src: url(DepartureMono-Regular.woff2);
+}
+     #map { height: 100vh; width: 100hh; }
+</style>
+</head>
+<body>
+<div id="map">
+    {{svg_background}}
+</div>
+<script>
+var map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -5
+});
+var svg = document.getElementById("svg_overlay")
+var image = L.svgOverlay(svg, [[0, 0], [2000, 2000]]).addTo(map);
+map.setView([1000,1000],3)
+</script>
+</body>
+</html>
+

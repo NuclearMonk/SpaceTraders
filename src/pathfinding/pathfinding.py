@@ -30,7 +30,7 @@ def fuel_cost(A: PathFindingWaypoint, B: PathFindingWaypoint):
     return x
 
 
-def create_graph(waypoints: List[Waypoint])-> Dict[str, PathFindingWaypoint]:
+def create_graph(waypoints: List[Waypoint]) -> Dict[str, PathFindingWaypoint]:
     wps = {wp.symbol: PathFindingWaypoint(
         wp.symbol, wp.x, wp.y, wp.has_trait('MARKETPLACE')) for wp in waypoints}
     markets = [v for v in wps.values() if v.has_marketplace]
@@ -79,13 +79,16 @@ def dijkstra_with_fuel(start: str, destination: str, waypoints: List[Waypoint], 
     return previous, distances, fuel
 
 
-def calculate_route(start: str, destination: str, max_fuel: int, starting_fuel: int) -> Optional[List[str]]:
+def calculate_route(start: str, destination: str, max_fuel: int, starting_fuel: int) -> Optional[List[tuple[Waypoint, bool]]]:
     start_system = system_symbol_from_wp_symbol(start)
     destination_system = system_symbol_from_wp_symbol(destination)
     if start_system == destination_system:
+        if start == destination:
+            return None
         waypoints = get_waypoints(system_symbol=start_system)
         previous, distances, refuel = dijkstra_with_fuel(
             start, destination, waypoints, max_fuel, starting_fuel)
+
         if destination in previous:
             current = destination
             route = []
@@ -94,4 +97,5 @@ def calculate_route(start: str, destination: str, max_fuel: int, starting_fuel: 
                     (get_waypoint_with_symbol(current), refuel[current]))
                 current = previous[current]
             route.reverse()
-    return route
+            return route
+    return None

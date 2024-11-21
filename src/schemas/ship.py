@@ -1,4 +1,3 @@
-from asyncio import sleep
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 import json
@@ -10,7 +9,6 @@ from crud.contract import create_update_contract
 from crud.survey import store_survey
 from crud.tradegood import get_good
 from crud.transaction import get_create_transaction
-from login import HEADERS
 from schemas.agent import Agent
 from schemas.contract import Contract
 from schemas.extraction import Extraction
@@ -19,13 +17,10 @@ from schemas.market import TradeGood, MarketTransaction, TradeSymbol
 from schemas.navigation import ScannedSystem, Waypoint
 from st_requests.contract import CONTRACTS_BASE_URL
 from st_requests.request import patch_request, post_request
-from st_requests.ship import ship_orbit
 from st_requests.waypoint import get_system, get_waypoint
 from utils.observable import Observable
 from schemas.survey import Survey
 from utils.utils import error_wrap, format_time_ms, success_wrap, time_until, console
-from requests import Response, get, post, patch
-from pathfinding.pathfinding import calculate_route
 from custom_logging import create_ship_logger
 SHIPS_BASE_URL = 'https://api.spacetraders.io/v2/my/ships'
 
@@ -145,7 +140,7 @@ class ShipNav(BaseModel):
             return self.status
         if self.route.time_remaining == timedelta(0):
             self.status = ShipNavStatus.IN_ORBIT
-            return self.status
+        return ShipNavStatus.IN_TRANSIT
 
 
 class ShipCargoItem(TradeGood):
@@ -167,8 +162,14 @@ class ShipCargo(BaseModel):
     def capacity_remaining(self):
         return self.capacity - self.units
 
-    def items(self) -> Dict[str, int]:
+    def items(self) -> Dict[TradeSymbol, int]:
         return {entry.symbol: entry.units for entry in self.inventory}
+
+    def get_item_count(self, symbol: TradeSymbol) -> int:
+        for item in self.inventory:
+            if item.symbol == symbol:
+                return item.units
+        return 0
 
 
 class ShipRequirements(BaseModel):
@@ -383,6 +384,9 @@ class Ship(ScannedShip, Observable):
     modules: List[ShipModule]
     crew: ShipCrew
 
+    def __init__(self,  **kwargs):
+        super().__init__(**kwargs)
+
     def model_post_init(self, __context) -> None:
         create_ship_logger(self.symbol)
 
@@ -413,6 +417,12 @@ class Ship(ScannedShip, Observable):
                                                   description=good.description,
                                                   units=units))
         self.update()
+
+    def has_mount(self, mount_symbol: ShipMountSymbol) -> bool:
+        for mount in self.mounts:
+            if mount.symbol == mount_symbol:
+                return True
+        return False
 
     def remove_cargo(self, good: TradeGood, units: int):
         self.log(f"Removing {units} of {good.symbol} from inventory")
@@ -464,6 +474,7 @@ class Ship(ScannedShip, Observable):
             nav = ShipNav.model_validate(js['data']['nav'])
             nav.route.origin = get_waypoint(nav.route.origin.symbol)
             nav.route.destination = get_waypoint(nav.route.destination.symbol)
+            self.nav = nav
             self.update()
             self.log(f'Dock Success', success=True)
 
@@ -500,7 +511,7 @@ class Ship(ScannedShip, Observable):
             self.log(f'Validation Failed', error=True)
             return False, []
 
-    def extract(self, survey: Survey) -> Tuple[bool, Optional[Extraction]]:
+    def extract(self) -> Tuple[bool, Optional[Extraction]]:
         self.log(f'Extract')
         if self.nav.live_status != ShipNavStatus.IN_ORBIT:
             self.log('Not In Orbit', error=True)
@@ -588,7 +599,7 @@ class Ship(ScannedShip, Observable):
             self.log(f"Validation Failed", error=True)
             return False, None
 
-    def sell(self, good: TradeGood, units: int) -> Tuple[bool, Optional[MarketTransaction], Optional[Agent]]:
+    def purchase(self, good: TradeGood, units: int) -> Tuple[bool, Optional[MarketTransaction], Optional[Agent]]:
         self.log(f'Purchase {units} Units of {good.symbol}')
 
         if self.nav.status != ShipNavStatus.DOCKED:
@@ -599,7 +610,7 @@ class Ship(ScannedShip, Observable):
         response = post_request(
             f'{SHIPS_BASE_URL}/{self.symbol}/purchase', data=payload)
         if not response.ok:
-            self.log(f'Sell Request Failed', error=True)
+            self.log(f'Purchase Request Failed', error=True)
             return False, None, None
         js = response.json()
         try:
@@ -609,7 +620,7 @@ class Ship(ScannedShip, Observable):
             agent = Agent.model_validate(js['data']['agent'])
             self.cargo = ShipCargo.model_validate(js['data']['cargo'])
             self.update()
-            self.log("Sell Success", success=True)
+            self.log("Purchase Success", success=True)
             return True, get_create_transaction(transaction), create_agent(agent)
         except ValidationError as e:
             self.log(f"Validation Failed", error=True)
@@ -872,7 +883,8 @@ class Ship(ScannedShip, Observable):
         js = response.json()
         try:
             contract = Contract.model_validate_json(js['data']['contract'])
-            create_update_contract(contract)
+            contract.add_observer(create_update_contract)
+            contract.update()
             return True, contract
         except ValidationError as e:
             self.log(f'Bad RESPONSE: {
@@ -899,8 +911,9 @@ class Ship(ScannedShip, Observable):
         try:
             self.cargo = ShipCargo.model_validate(js['data']['cargo'])
             self.update()
-            contract = Contract.model_validate(js['data']['contract'])
-            create_update_contract(contract)
+            new_contract = Contract.model_validate(js['data']['contract'])
+            contract.terms = new_contract.terms
+            contract.update()
             return True, contract
         except ValidationError as e:
             self.log(f'Validation Failed', error=True)

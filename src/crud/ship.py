@@ -95,7 +95,7 @@ def __update_ship(model: ShipModel, ship: Ship, session: Session) -> ShipModel:
     model.fuel.capacity = ship.fuel.capacity
     model.fuel.current = ship.fuel.current
     model.fuel.consumed = __get_fuel_consumption(ship.fuel.consumed, session)
-    model.cooldown_expiration = ship.cooldown.expiration
+    model.cooldown.expiration = ship.cooldown.expiration
     model.cargo.units = ship.cargo.units
     model.cargo.capacity = ship.cargo.capacity
     model.cargo.inventory = [__get_ship_cargo_item(item, session)

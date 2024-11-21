@@ -209,7 +209,7 @@ class ActivityLevel(str, Enum):
     RESTRICTED = 'RESTRICTED'
 
 
-class   MarketTradeGood(BaseModel):
+class MarketTradeGood(BaseModel):
     symbol: TradeSymbol
     type: MarketTradeGoodType
     tradeVolume: int
@@ -227,3 +227,27 @@ class Market(BaseModel):
     transactions: Optional[List[MarketTransaction]] = None
     tradeGoods: Optional[List[MarketTradeGood]] = None
     last_updated: Optional[datetime] = None
+
+    def trade_good_purchase_price(self, good: MarketTradeGood) -> Optional[int]:
+        if not self.tradeGoods:
+            return None
+        for g in self.tradeGoods:
+            if g.symbol == good.symbol:
+                return g.purchasePrice
+        return None
+
+    def trade_good_sell_price(self, good: MarketTradeGood) -> Optional[int]:
+        if not self.tradeGoods:
+            return None
+        for g in self.tradeGoods:
+            if g.symbol == good.symbol:
+                return g.sellPrice
+        return None
+
+    def trade_good_trade_volume(self, good: MarketTradeGood) -> Optional[int]:
+        if not self.tradeGoods:
+            return None
+        for g in self.tradeGoods:
+            if g.symbol == good.symbol:
+                return g.tradeVolume
+        return None

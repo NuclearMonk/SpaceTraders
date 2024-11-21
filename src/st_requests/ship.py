@@ -1,26 +1,20 @@
 
 
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional
 
-from pydantic import TypeAdapter, ValidationError
-from crud.agent import create_agent
-from crud.ship import create_or_update_ship, update_ship
-from crud.survey import store_survey
-from crud.transaction import get_create_transaction
-from schemas.agent import Agent
-from schemas.extraction import Extraction
-from schemas.market import MarketTransaction, TradeSymbol
+from pydantic import TypeAdapter
+from crud.ship import create_or_update_ship
 from schemas.meta import Meta
-from schemas.navigation import ScannedSystem, Waypoint
-from schemas.ship import Cooldown, ScannedShip, Ship, ShipCargo, ShipFuel, ShipNav, ShipNavFlightMode
-from schemas.survey import Survey
-from st_requests.request import get_request, patch_request, post_request
+from schemas.ship import Ship
+from st_requests.request import get_request
 from logging import getLogger
 
-from st_requests.waypoint import get_system, get_waypoint
+from st_requests.waypoint import get_waypoint
 SHIPS_BASE_URL = 'https://api.spacetraders.io/v2/my/ships'
 
 logger = getLogger(__name__)
+
+__ships: Dict[str, Ship] = {}
 
 
 def get_ships() -> List[Ship]:
@@ -47,10 +41,12 @@ def get_ships() -> List[Ship]:
         new_ships = ta.validate_python(js['data'])
         ships.extend(new_ships)
     for ship in ships:
+        __ships[ship.symbol] = ship
         ship.nav.route.origin = get_waypoint(ship.nav.route.origin.symbol)
         ship.nav.route.destination = get_waypoint(
             ship.nav.route.destination.symbol)
-        create_or_update_ship(ship)
+        ship.add_observer(create_or_update_ship)
+        ship.update()
     return ships
 
 
@@ -58,6 +54,8 @@ def get_ship(symbol: str) -> Optional[Ship]:
     '''gets ship from the server\nr\n
     updates database\n
     then returns them'''
+    if symbol in __ships:
+        return __ships[symbol]
 
     logger.info("Getting ship {symbol}")
     response = get_request(f'{SHIPS_BASE_URL}/{symbol}')
@@ -69,6 +67,7 @@ def get_ship(symbol: str) -> Optional[Ship]:
     ship.nav.route.origin = get_waypoint(ship.nav.route.origin.symbol)
     ship.nav.route.destination = get_waypoint(
         ship.nav.route.destination.symbol)
-    create_or_update_ship(ship)
-    ship.add_observer(update_ship)
+    ship.add_observer(create_or_update_ship)
+    ship.update()
+    __ships[symbol] = ship
     return ship

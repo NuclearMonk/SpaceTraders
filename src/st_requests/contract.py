@@ -1,5 +1,6 @@
 
 
+from datetime import timedelta
 from typing import List, Optional
 
 from pydantic import TypeAdapter
@@ -11,6 +12,7 @@ from logging import getLogger
 
 from st_requests.request import get_request
 from st_requests.waypoint import get_waypoint
+from utils.utils import time_until
 
 CONTRACTS_BASE_URL = 'https://api.spacetraders.io/v2/my/contracts/'
 logger = getLogger(__name__)
@@ -27,6 +29,8 @@ def __get_contract_from_server(id: str) -> Optional[Contract]:
     for delivery in contract.terms.deliver:
         get_waypoint(delivery.destinationSymbol)
     create_update_contract(contract)
+    contract.add_observer(create_update_contract)
+
     return contract
 
 
@@ -60,6 +64,8 @@ def get_all_contracts_from_server():
         for delivery in contract.terms.deliver:
             get_waypoint(delivery.destinationSymbol)
         fancy_contracts.append(create_update_contract(contract))
+    for contract in fancy_contracts:
+        contract.add_observer(create_update_contract)
     return fancy_contracts
 
 
@@ -70,11 +76,15 @@ def get_contract(id: str) -> Optional[Contract]:
     then returns it'''
     logger.info(f"getting contract with id: {id}")
     if contract := get_contract_from_db(id):
+        contract.add_observer(create_update_contract)
         return contract
     return __get_contract_from_server(id)
 
 
 def get_open_contracts() -> List[Contract]:
     logger.info(f"getting open contracts ")
-
-    return get_open_contracts_db()
+    contracts = [c for c in get_open_contracts_db() if time_until(
+        c.terms.deadline) > timedelta(0)]
+    for contract in contracts:
+        contract.add_observer(create_update_contract)
+    return contracts

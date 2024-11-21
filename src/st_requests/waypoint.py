@@ -29,13 +29,15 @@ def __get_waypoint_from_server(symbol: str) -> Optional[Waypoint]:
     return create_update_waypoint(waypoint)
 
 
-def get_waypoint(symbol: str):
+def get_waypoint(symbol: Optional[str]) -> Optional[Waypoint]:
     '''gets ship from the cache\n
     if not in cache then gets from server\n
     updates cache\n
     then returns them'''
 
     logger.info(f'Getting waypoint with symbol {symbol}')
+    if symbol == None:
+        return None
     if wp := get_waypoint_with_symbol(symbol):
         if wp.isUnderConstruction:
             logger.debug('Waypoint is under construction. Refreshing')

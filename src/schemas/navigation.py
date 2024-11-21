@@ -156,7 +156,7 @@ class Waypoint(BaseModel):
     def system_symbol(self) -> str:
         return system_symbol_from_wp_symbol(self.symbol)
 
-    def has_trait(self, trait_symbol: str) -> bool:
+    def has_trait(self, trait_symbol: WaypointTraitSymbol) -> bool:
         return trait_symbol in set(trait.symbol for trait in self.traits)
 
     def distance_to(self, other: Self) -> float:

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from models.waypoint import TraitModel, WaypointModel
 from utils.utils import utcnow
 
-from schemas.navigation import Waypoint, WaypointFaction
+from schemas.navigation import Waypoint, WaypointFaction, WaypointTraitSymbol, WaypointType
 from .modifiers import _modifier_to_schema, _store_modifier
 from .traits import _store_trait, _trait_to_schema
 from logging import getLogger
@@ -16,6 +16,7 @@ from logging import getLogger
 STALE_TIME = timedelta(minutes=1)
 
 logger = getLogger(__name__)
+
 
 def get_waypoint_with_symbol(symbol: str):
     with Session(engine) as session:
@@ -27,6 +28,7 @@ def _get_waypoint(symbol: str, session: Session):
     if wp := _get_waypoint_from_db(symbol, session):
         return wp
     return None
+
 
 def create_update_waypoint(wp: Waypoint) -> Waypoint:
     with Session(engine) as session:
@@ -96,7 +98,7 @@ def _waypoint_to_schema(wp: WaypointModel) -> Waypoint:
     )
 
 
-def get_waypoints(system_symbol: str = None, type: str = None, trait_symbols: List[str] = None) -> List[Waypoint]:
+def get_waypoints(system_symbol: str = None, type: WaypointType = None, trait_symbols: List[WaypointTraitSymbol] = None) -> List[Waypoint]:
     with Session(engine) as session:
         stmt = select(WaypointModel)
         if system_symbol:

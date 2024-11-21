@@ -1,5 +1,6 @@
 
 
+from datetime import timedelta
 from logging import getLogger
 from typing import List, Optional
 
@@ -7,9 +8,9 @@ from crud.market import create_update_market, get_market_from_db, get_markets_ex
 from schemas.market import Market, TradeSymbol
 from st_requests.request import get_request
 from st_requests.waypoint import get_waypoint
-from utils.utils import system_symbol_from_wp_symbol
+from utils.utils import system_symbol_from_wp_symbol, utcnow
 
-SYSTEM_BASE_URL = 'https://api.spacetraders.io/v2/systems/'
+SYSTEM_BASE_URL = 'https://api.spacetraders.io/v2/systems'
 
 logger = getLogger(__name__)
 
@@ -25,15 +26,15 @@ def __get_market_from_server(symbol: str) -> Optional[Market]:
         return None
     js = response.json()
     market = Market.model_validate(js['data'])
-    print(market.model_dump_json(indent=2))
     get_waypoint(market.symbol)
     return create_update_market(market)
 
 
-def get_market(symbol: str) -> Optional[Market]:
+def get_market(symbol: str, force: bool = False) -> Optional[Market]:
     '''gets market, from cache if possible'''
-    if market := get_market_from_db(symbol):
-        return market
+    if market := get_market_from_db(symbol) and not force:
+        if market.last_updated - utcnow() < timedelta(minutes=5):
+            return market
     return __get_market_from_server(symbol)
 
 

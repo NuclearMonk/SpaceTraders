@@ -1,9 +1,16 @@
 from datetime import datetime
 from enum import StrEnum
+from logging import getLogger
 from typing import List
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError
+from crud.agent import create_agent
 from login import CONTRACTS_BASE_URL, HEADERS, get, post
+from schemas.agent import Agent
 from schemas.faction import FactionSymbol
+from st_requests.request import post_request
+from utils.observable import Observable
+
+logger = getLogger(__name__)
 
 
 class ContractType(StrEnum):
@@ -30,7 +37,7 @@ class ContractTerms(BaseModel):
     deliver: List[ContractDelivery]
 
 
-class Contract(BaseModel):
+class Contract(BaseModel, Observable):
     id: str
     factionSymbol: FactionSymbol
     contract_type: ContractType = Field(alias='type')
@@ -39,39 +46,46 @@ class Contract(BaseModel):
     fulfilled: bool
     deadlineToAccept: datetime
 
-    def accept(self):
-        print(f'Accepting {self.id}')
-        self.accepted = post(
-            f'{CONTRACTS_BASE_URL}/{self.id}/accept', headers=HEADERS).ok
-        print(self.accepted)
-        return self.accepted
+    def __init__(self,  **kwargs):
+        super().__init__(**kwargs)
 
-    def fulfill(self):
-        self.fulfilled = post(
-            f'{CONTRACTS_BASE_URL}/{self.id}/fulfill', headers=HEADERS).ok
-        return self.fulfilled
+    @property
+    def ready_to_fulfill(self) -> bool:
+        for delivery in self.terms.deliver:
+            if delivery.unitsFulfilled < delivery.unitsRequired:
+                return False
+        return True
 
+    def accept(self) -> bool:
+        response = post_request(f'{CONTRACTS_BASE_URL}/{self.id}/accept')
+        if not response.ok:
+            logger.warning("Accept Contract Request Failed")
+            return self.accepted
+        js = response.json()
+        try:
+            agent = Agent.model_validate(js['data']['agent'])
+            create_agent(agent)
+            contract = Contract.model_validate(js['data']['contract'])
+            self.accepted = contract.accepted
+            self.update()
+            return self.accepted
+        except ValidationError as e:
+            self.log(f'Validation Failed', error=True)
+            return self.accepted
 
-
-
-# def get_all_contracts(limit=20):
-#     contracts: list[Contract] = []
-#     ta = TypeAdapter(List[Contract])
-#     current = 0
-#     m = float('inf')
-#     page = 1
-#     while current < m:
-#         response = get(CONTRACTS_BASE_URL +
-#                        f'?page={page}&limit={limit}', headers=HEADERS)
-#         if response.ok:
-#             js = response.json()
-#             m = js['meta']['total']
-#             current += len(js['data'])
-#             page += 1
-#             new_contracts = ta.validate_python(js['data'])
-#             contracts.extend(new_contracts)
-#     return contracts
-
-
-# def get_open_contracts() -> List[Contract]:
-#     return [contract for contract in get_all_contracts() if not contract.fulfilled]
+    def fulfill(self) -> bool:
+        response = post_request(f'{CONTRACTS_BASE_URL}/{self.id}/fulfill')
+        if not response.ok:
+            logger.warning("Fullfil Contract Request Failed")
+            return self.fulfilled
+        js = response.json()
+        try:
+            agent = Agent.model_validate(js['data']['agent'])
+            create_agent(agent)
+            contract = Contract.model_validate(js['data']['contract'])
+            self.fulfilled = contract.fulfilled
+            self.update()
+            return self.fulfilled
+        except ValidationError as e:
+            self.log(f'Validation Failed', error=True)
+            return self.fulfilled

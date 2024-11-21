@@ -8,4 +8,5 @@ from models.ship import *
 from models.agent import *
 from models.request import *
 from models.system import *
+from models.job_assignments import *
 Base.metadata.create_all(engine)

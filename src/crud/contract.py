@@ -1,4 +1,5 @@
 
+from datetime import UTC
 from logging import getLogger
 from sqlalchemy import select
 from login import engine
@@ -8,21 +9,23 @@ from sqlalchemy.orm import Session
 
 logger = getLogger(__name__)
 
+
 def create_update_contract(contract: Contract) -> Contract:
     with Session(engine) as session:
         if db_contract := _get_contract_from_db(contract.id, session):
-            return _contract_to_schema(_update_contract_in_db(db_contract, contract))
+            return _contract_to_schema(_update_contract_in_db(db_contract, contract, session))
         return _contract_to_schema(_store_contract_in_db(contract, session))
 
 
-def get_contract_from_db(id: str):
+def get_contract_from_db(id: str) -> Contract:
     logger.info(f"getting contract from db with id: {id}")
     with Session(engine) as session:
-        return _get_contract_from_db(id, session)
+        return _contract_to_schema(_get_contract_from_db(id, session))
+
 
 def get_open_contracts_db():
     with Session(engine) as session:
-        return [_contract_to_schema(c) for c in session.scalars(select(ContractModel).where(ContractModel.fulfilled == False)).all()]
+        return [_contract_to_schema(c) for c in session.scalars(select(ContractModel).where(ContractModel.fulfilled == False))]
 
 
 def _contract_to_schema(contract: ContractModel) -> Contract:
@@ -32,7 +35,7 @@ def _contract_to_schema(contract: ContractModel) -> Contract:
         id=contract.id,
         factionSymbol=contract.faction_symbol,
         type=contract.contract_type,
-        terms=ContractTerms(deadline=contract.terms_deadline,
+        terms=ContractTerms(deadline=contract.terms_deadline.replace(tzinfo=UTC),
                             payment=ContractPayment(
                                 onAccepted=contract.terms_pay_accepted,
                                 onFulfilled=contract.terms_pay_fulfilled),
@@ -43,7 +46,7 @@ def _contract_to_schema(contract: ContractModel) -> Contract:
                             ),
         accepted=contract.accepted,
         fulfilled=contract.fulfilled,
-        deadlineToAccept=contract.deadline_to_accept
+        deadlineToAccept=contract.deadline_to_accept.replace(tzinfo=UTC)
     )
 
 

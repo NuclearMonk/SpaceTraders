@@ -119,8 +119,8 @@ def _update_market_in_db(model: MarketModel, market: Market, session: Session) -
     if market.transactions:
         print("adding_transactions")
 
-        model.transactions = [_get_create_transaction(trans, session)
-                              for trans in market.transactions]
+        model.transactions.extend([_get_create_transaction(trans, session)
+                                   for trans in market.transactions])
     if market.tradeGoods:
         model.trade_goods = [_get_create_market_trade_good(trade_good, session)
                              for trade_good in market.tradeGoods]
@@ -129,5 +129,5 @@ def _update_market_in_db(model: MarketModel, market: Market, session: Session) -
     return model
 
 
-def _get_market_from_db(symbol: str, session)-> Optional[MarketModel]:
+def _get_market_from_db(symbol: str, session) -> Optional[MarketModel]:
     return session.scalar(select(MarketModel).where(MarketModel.symbol == symbol))
