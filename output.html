@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+crossorigin=""></script>
+<style>
+     @font-face {
+    font-family: "Departure";
+    src: url(DepartureMono-Regular.woff2);
+}
+     #map { height: 100vh; width: 100hh; }
+</style>
+</head>
+<body>
+<div id="map">
+    <?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="2000" height="2000" viewBox="-1000.0 -1000.0 2000 2000" id="svg_overlay" style="font-family: Departure;">
+<defs>
+</defs>
+<rect x="-1000" y="-1000" width="0" height="0" fill="#ff00ff" />
+<circle cx="0" cy="0" r="1" fill="blue" />
+<circle cx="-13" cy="-20" r="3" fill="red" />
+<text x="-10.5" y="-17.5" font-size="4" fill="white">A1 A2 A3 A4</text>
+<circle cx="-312" cy="162" r="3" fill="white" />
+<text x="-309.5" y="164.5" font-size="4" fill="white">B30</text>
+<circle cx="-380" cy="-83" r="3" fill="white" />
+<text x="-377.5" y="-80.5" font-size="4" fill="white">B32</text>
+<circle cx="-174" cy="-258" r="3" fill="white" />
+<text x="-171.5" y="-255.5" font-size="4" fill="white">B35</text>
+<circle cx="-765" cy="-186" r="3" fill="white" />
+<text x="-762.5" y="-183.5" font-size="4" fill="white">J66</text>
+<circle cx="137" cy="-315" r="3" fill="white" />
+<text x="139.5" y="-312.5" font-size="4" fill="white">B10</text>
+<circle cx="336" cy="-40" r="3" fill="white" />
+<text x="338.5" y="-37.5" font-size="4" fill="white">B11</text>
+<circle cx="-237" cy="-738" r="3" fill="white" />
+<text x="-234.5" y="-735.5" font-size="4" fill="white">J74</text>
+<circle cx="-217" cy="-718" r="3" fill="white" />
+<text x="-214.5" y="-715.5" font-size="4" fill="white">J75</text>
+<circle cx="-11" cy="-712" r="3" fill="white" />
+<text x="-8.5" y="-709.5" font-size="4" fill="white">J76</text>
+<circle cx="678" cy="-268" r="3" fill="white" />
+<text x="680.5" y="-265.5" font-size="4" fill="white">J78</text>
+<circle cx="-577" cy="-163" r="3" fill="red" />
+<text x="-574.5" y="-160.5" font-size="4" fill="white">J55</text>
+<circle cx="571" cy="477" r="3" fill="white" />
+<text x="573.5" y="479.5" font-size="4" fill="white">J58</text>
+<circle cx="-164" cy="761" r="3" fill="white" />
+<text x="-161.5" y="763.5" font-size="4" fill="white">J60</text>
+<circle cx="-221" cy="-62" r="3" fill="red" />
+<text x="-218.5" y="-59.5" font-size="4" fill="white">I54</text>
+<circle cx="45" cy="3" r="3" fill="red" />
+<text x="47.5" y="5.5" font-size="4" fill="white">H52 H51 H49 H50</text>
+<circle cx="371" cy="-9" r="3" fill="white" />
+<text x="373.5" y="-6.5" font-size="4" fill="white">B13</text>
+<circle cx="220" cy="316" r="3" fill="white" />
+<text x="222.5" y="318.5" font-size="4" fill="white">B23</text>
+<circle cx="-285" cy="240" r="3" fill="white" />
+<text x="-282.5" y="242.5" font-size="4" fill="white">B26</text>
+<circle cx="-170" cy="350" r="3" fill="white" />
+<text x="-167.5" y="352.5" font-size="4" fill="white">B28</text>
+<circle cx="153" cy="300" r="3" fill="white" />
+<text x="155.5" y="302.5" font-size="4" fill="white">B18</text>
+<circle cx="-381" cy="54" r="3" fill="white" />
+<text x="-378.5" y="56.5" font-size="4" fill="white">B31</text>
+<circle cx="-529" cy="583" r="3" fill="white" />
+<text x="-526.5" y="585.5" font-size="4" fill="white">J62</text>
+<circle cx="-301" cy="649" r="3" fill="white" />
+<text x="-298.5" y="651.5" font-size="4" fill="white">J64</text>
+<circle cx="-27" cy="-378" r="3" fill="white" />
+<text x="-24.5" y="-375.5" font-size="4" fill="white">B8</text>
+<circle cx="-720" cy="169" r="3" fill="white" />
+<text x="-717.5" y="171.5" font-size="4" fill="white">J68</text>
+<circle cx="-370" cy="-641" r="3" fill="white" />
+<text x="-367.5" y="-638.5" font-size="4" fill="white">J70</text>
+<circle cx="-143" cy="-707" r="3" fill="white" />
+<text x="-140.5" y="-704.5" font-size="4" fill="white">J73</text>
+<circle cx="752" cy="-129" r="3" fill="white" />
+<text x="754.5" y="-126.5" font-size="4" fill="white">J79</text>
+<circle cx="98" cy="-752" r="3" fill="white" />
+<text x="100.5" y="-749.5" font-size="4" fill="white">J77</text>
+<circle cx="-54" cy="10" r="3" fill="red" />
+<text x="-51.5" y="12.5" font-size="4" fill="white">E44 E45</text>
+<circle cx="349" cy="651" r="3" fill="white" />
+<text x="351.5" y="653.5" font-size="4" fill="white">J57</text>
+<circle cx="445" cy="616" r="3" fill="white" />
+<text x="447.5" y="618.5" font-size="4" fill="white">J59</text>
+<circle cx="-83" cy="772" r="3" fill="white" />
+<text x="-80.5" y="774.5" font-size="4" fill="white">J61</text>
+<circle cx="-434" cy="-122" r="3" fill="red" />
+<text x="-431.5" y="-119.5" font-size="4" fill="white">I53</text>
+<circle cx="-6" cy="-74" r="3" fill="red" />
+<text x="-3.5" y="-71.5" font-size="4" fill="white">F47 F46</text>
+<circle cx="289" cy="143" r="3" fill="white" />
+<text x="291.5" y="145.5" font-size="4" fill="white">B21</text>
+<circle cx="301" cy="116" r="3" fill="white" />
+<text x="303.5" y="118.5" font-size="4" fill="white">B15</text>
+<circle cx="-109" cy="320" r="3" fill="white" />
+<text x="-106.5" y="322.5" font-size="4" fill="white">B25</text>
+<circle cx="-295" cy="202" r="3" fill="white" />
+<text x="-292.5" y="204.5" font-size="4" fill="white">B27</text>
+<circle cx="384" cy="50" r="3" fill="white" />
+<text x="386.5" y="52.5" font-size="4" fill="white">B17</text>
+<circle cx="-250" cy="278" r="3" fill="white" />
+<text x="-247.5" y="280.5" font-size="4" fill="white">B29</text>
+<circle cx="248" cy="214" r="3" fill="white" />
+<text x="250.5" y="216.5" font-size="4" fill="white">B19</text>
+<circle cx="-293" cy="-171" r="3" fill="white" />
+<text x="-290.5" y="-168.5" font-size="4" fill="white">B33</text>
+<circle cx="-567" cy="455" r="3" fill="white" />
+<text x="-564.5" y="457.5" font-size="4" fill="white">J63</text>
+<circle cx="-612" cy="460" r="3" fill="white" />
+<text x="-609.5" y="462.5" font-size="4" fill="white">J67</text>
+<circle cx="-134" cy="-306" r="3" fill="white" />
+<text x="-131.5" y="-303.5" font-size="4" fill="white">B36</text>
+<circle cx="-66" cy="-349" r="3" fill="white" />
+<text x="-63.5" y="-346.5" font-size="4" fill="white">B37</text>
+<circle cx="46" cy="-371" r="3" fill="white" />
+<text x="48.5" y="-368.5" font-size="4" fill="white">B38</text>
+<circle cx="34" cy="154" r="3" fill="red" />
+<text x="36.5" y="156.5" font-size="4" fill="white">C39 C40</text>
+<circle cx="25" cy="114" r="3" fill="red" />
+<text x="27.5" y="116.5" font-size="4" fill="white">C41</text>
+<circle cx="-691" cy="-195" r="3" fill="red" />
+<text x="-688.5" y="-192.5" font-size="4" fill="white">J56</text>
+<circle cx="347" cy="80" r="3" fill="white" />
+<text x="349.5" y="82.5" font-size="4" fill="white">B22</text>
+<circle cx="-33" cy="372" r="3" fill="white" />
+<text x="-30.5" y="374.5" font-size="4" fill="white">B24</text>
+<circle cx="374" cy="-19" r="3" fill="white" />
+<text x="376.5" y="-16.5" font-size="4" fill="white">B16</text>
+<circle cx="94" cy="-166" r="3" fill="red" />
+<text x="96.5" y="-163.5" font-size="4" fill="white">B6</text>
+<circle cx="-267" cy="-198" r="3" fill="white" />
+<text x="-264.5" y="-195.5" font-size="4" fill="white">B34</text>
+<circle cx="-671" cy="272" r="3" fill="white" />
+<text x="-668.5" y="274.5" font-size="4" fill="white">J65</text>
+<circle cx="172" cy="-264" r="3" fill="white" />
+<text x="174.5" y="-261.5" font-size="4" fill="white">B9</text>
+<circle cx="-780" cy="90" r="3" fill="white" />
+<text x="-777.5" y="92.5" font-size="4" fill="white">J69</text>
+<circle cx="-394" cy="-648" r="3" fill="white" />
+<text x="-391.5" y="-645.5" font-size="4" fill="white">J71</text>
+<circle cx="-258" cy="-684" r="3" fill="white" />
+<text x="-255.5" y="-681.5" font-size="4" fill="white">J72</text>
+<circle cx="753" cy="137" r="3" fill="white" />
+<text x="755.5" y="139.5" font-size="4" fill="white">J80</text>
+<circle cx="80" cy="35" r="3" fill="red" />
+<text x="82.5" y="37.5" font-size="4" fill="white">D42 D43</text>
+<circle cx="346" cy="-80" r="3" fill="white" />
+<text x="348.5" y="-77.5" font-size="4" fill="white">B12</text>
+<circle cx="198" cy="-290" r="3" fill="white" />
+<text x="200.5" y="-287.5" font-size="4" fill="white">B14</text>
+<circle cx="28" cy="1" r="3" fill="red" />
+<text x="30.5" y="3.5" font-size="4" fill="white">AZ5B</text>
+<circle cx="309" cy="82" r="3" fill="white" />
+<text x="311.5" y="84.5" font-size="4" fill="white">B20</text>
+<circle cx="-50" cy="-339" r="3" fill="red" />
+<text x="-47.5" y="-336.5" font-size="4" fill="white">B7</text>
+<circle cx="-90" cy="-52" r="3" fill="red" />
+<text x="-87.5" y="-49.5" font-size="4" fill="white">K81</text>
+<circle cx="11" cy="66" r="3" fill="red" />
+<text x="13.5" y="68.5" font-size="4" fill="white">G48</text>
+</svg>
+</div>
+<script>
+var map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -5
+});
+var svg = document.getElementById("svg_overlay")
+var image = L.svgOverlay(svg, [[0, 0], [2000, 2000]]).addTo(map);
+map.setView([1000,1000],3)
+</script>
+</body>
+</html>
