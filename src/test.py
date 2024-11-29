@@ -1,5 +1,3 @@
-
-
 # from schemas.navigation import WaypointTraitSymbol
 # from st_requests.market import get_market
 # from st_requests.waypoint import get_system
