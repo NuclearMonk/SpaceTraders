@@ -45,13 +45,14 @@ class Transition:
 
 
 class StateMachine(State):
-    def __init__(self, name, states: List[State], trans: List[Transition], entry_state: str) -> None:
+    def __init__(self, name, states: List[State], trans: List[Transition], entry_state: str, root= False) -> None:
         self.name = name
         self.states: Dict[str, State] = {state.name: state for state in states}
         self.transitions: List[Transition] = trans
         self.entry_state = entry_state
         self.current_state = None
-        self.set_state(entry_state)
+        if root:
+            self.set_state(entry_state)
 
     def __str__(self) -> str:
         return f"{self.name}>{self.current_state}"

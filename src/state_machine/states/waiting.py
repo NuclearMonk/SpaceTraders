@@ -1,8 +1,8 @@
 
 
-from state_machine.state_machine import State
+from state_machine.states.ship_state import ShipState
 
 
-class StateWaiting(State):
+class StateWaiting(ShipState):
     pass
 

@@ -139,6 +139,8 @@ class ShipNav(BaseModel):
         if self.status != ShipNavStatus.IN_TRANSIT:
             return self.status
         if self.route.time_remaining == timedelta(0):
+            self.waypointSymbol = self.route.destination.symbol
+            self.systemSymbol = self.route.destination.system_symbol
             self.status = ShipNavStatus.IN_ORBIT
         return ShipNavStatus.IN_TRANSIT
 

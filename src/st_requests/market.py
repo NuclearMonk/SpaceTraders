@@ -32,8 +32,8 @@ def __get_market_from_server(symbol: str) -> Optional[Market]:
 
 def get_market(symbol: str, force: bool = False) -> Optional[Market]:
     '''gets market, from cache if possible'''
-    if market := get_market_from_db(symbol) and not force:
-        if market.last_updated - utcnow() < timedelta(minutes=5):
+    if (market := get_market_from_db(symbol)) and not force:
+        if (market.last_updated - utcnow()) < timedelta(minutes=5):
             return market
     return __get_market_from_server(symbol)
 

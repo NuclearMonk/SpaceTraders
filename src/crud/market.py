@@ -67,7 +67,7 @@ def _market_to_schema(model: MarketModel) -> Market:
             trans) for trans in model.transactions],
         tradeGoods=[_market_trade_good_to_schema(
             trade_good) for trade_good in model.trade_goods],
-        last_updated=model.time_updated_utc
+        last_updated= model.time_updated_utc
     )
 
 

@@ -1,5 +1,6 @@
 
 
+from datetime import timedelta
 from heapq import heappop, heappush
 from itertools import product
 from math import sqrt
@@ -7,7 +8,7 @@ from typing import Dict, List, Optional
 
 from crud.waypoint import get_waypoint_with_symbol, get_waypoints
 from schemas.navigation import Waypoint
-from schemas.ship import ShipNavFlightMode
+from schemas.ship import ShipNavFlightMode, ShipNavStatus
 from st_requests.waypoint import get_waypoint
 from utils.utils import system_symbol_from_wp_symbol
 
@@ -38,28 +39,47 @@ class PathfindingEdge:
         self.cost_time = time_cost(start, end, flight_mode, ship_engine_speed)
 
     def __lt__(self, other):
-        if self.cost_time<other.cost_time:
+        if self.cost_time < other.cost_time:
             return True
-        if self.cost_fuel<other.cost_fuel:
+        if self.cost_fuel < other.cost_fuel:
             return True
         if self.refuel and not other.refuel:
             return True
         return False
 
+
 class RouteStep:
-    
+
     def __init__(self, edge: PathfindingEdge) -> None:
         self.start = get_waypoint(edge.start.symbol)
         self.end = get_waypoint(edge.end.symbol)
         self.flight_mode = edge.flight_mode
         self.refuel = edge.refuel
         self.time = edge.cost_time
-        
+
+    def __str__(self) -> str:
+        return f"{self.start.symbol}->{self.end.symbol} {self.flight_mode} {self.refuel} {timedelta(seconds=self.time)}"
 class PathfindingRoute:
-    def __init__(self, edges: List[PathfindingEdge]) -> None:
+    def __init__(self, edges: List[PathfindingEdge], target_status: ShipNavStatus) -> None:
         self.steps = [RouteStep(edge) for edge in edges]
-        self.total_time= sum(step.time for step in self.steps)
-        
+        self.target_status = target_status
+        self.total_time = sum(step.time for step in self.steps)
+
+    def advance(self):
+        self.steps.pop(0)
+
+    @property
+    def current_step(self):
+        if self.steps:
+            return self.steps[0]
+        return None
+
+    @property
+    def next_step(self):
+        if len(self.steps) >= 2:
+            return self.steps[1]
+        return None
+
 
 def fuel_cost(A: PathFindingWaypoint, B: PathFindingWaypoint, flight_mode: ShipNavFlightMode):
     if A == B:
@@ -132,7 +152,7 @@ def djikstras(start: str, destination: str, waypoints: List[Waypoint], max_fuel:
             continue  # we visited it before
 
         distances[symbol] = dist
-        routes[symbol] =edge
+        routes[symbol] = edge
         times[symbol] = time
         if symbol == destination:
             return distances, times, routes
@@ -150,66 +170,23 @@ def djikstras(start: str, destination: str, waypoints: List[Waypoint], max_fuel:
                 heappush(heap, (time+edge.cost_time, dist + edge.cost_fuel,
                                 fuel_remaining - edge.cost_fuel, neighbor.symbol, edge))
 
-    return  distances, times, routes
+    return distances, times, routes
 
 
-def dijkstra_with_fuel(start: str, destination: str, waypoints: List[Waypoint], max_fuel: int, starting_fuel: int) -> Optional[List[Waypoint]]:
-    distances = {}
-    previous = {}
-    fuel = {}
-    wps = create_nodes(waypoints)
-    heap = []
-    if wps[start].has_marketplace:
-        heappush(heap, (0, max_fuel, start, None, True))
-    else:
-        heappush(heap, (0, starting_fuel, start, None, False))
-    while heap:
-        dist, fuel_remaining, symbol, prev, refuel = heappop(heap)
-        if symbol in distances:
-            continue  # we visited it before
-
-        distances[symbol] = dist
-        previous[symbol] = prev
-        fuel[symbol] = refuelfuel
-        if symbol == destination:
-            return previous, distances, fuel
-        for neighbor in wps.values():
-            if neighbor.symbol == symbol:  # skip ourselves
-                continue
-            if neighbor.symbol not in distances:  # if we havent visited this neighbour yet
-                # check if we can travel to it
-                if fuel_cost(wps[symbol], neighbor) < fuel_remaining:
-                    if neighbor.has_marketplace:  # then we refuel on arrival making current fuel = max_fuel
-                        heappush(
-                            heap, (dist + fuel_cost(wps[symbol], neighbor), max_fuel, neighbor.symbol, symbol, True))
-                    # and if we aint gonna be stranded afterwards
-                    elif neighbor.nearest_market_distance <= fuel_remaining - fuel_cost(
-                            wps[symbol], neighbor):
-                        # otherwise, we consume some fuel instead and travel to it
-                        heappush(heap, (dist + fuel_cost(wps[symbol], neighbor), fuel_remaining - fuel_cost(
-                            wps[symbol], neighbor), neighbor.symbol, symbol, False))
-
-    return previous, distances, fuel
-
-
-def calculate_route(start: str, destination: str, max_fuel: int,engine_speed: int, starting_fuel: int) -> Optional[List[tuple[Waypoint, bool]]]:
-    start_system = system_symbol_from_wp_symbol(start)
-    destination_system = system_symbol_from_wp_symbol(destination)
-    if start_system == destination_system:
-        if start == destination:
-            return None
-        waypoints = get_waypoints(system_symbol=start_system)
+def calculate_route(start: Waypoint, destination: Waypoint, max_fuel: int, engine_speed: int, starting_fuel: int, target_status: ShipNavStatus = ShipNavStatus.IN_ORBIT) -> Optional[PathfindingRoute]:
+    if start.system_symbol == destination.system_symbol:
+        if start.symbol == destination.symbol:
+            return PathfindingRoute([], target_status)
+        waypoints = get_waypoints(system_symbol=start.system_symbol)
         distances, times, routes = djikstras(
-            start, destination, waypoints, max_fuel,engine_speed, starting_fuel)
+            start.symbol, destination.symbol, waypoints, max_fuel, engine_speed, starting_fuel)
 
-        if destination in routes:
-            current = destination
+        if destination.symbol in routes:
+            current = destination.symbol
             route = []
             while routes[current] != None:
-                print(current)
-                print(routes[current].start.symbol)
                 route.append(routes[current])
                 current = routes[current].start.symbol
             route.reverse()
-            return PathfindingRoute(route)
+            return PathfindingRoute(route, target_status)
     return None
