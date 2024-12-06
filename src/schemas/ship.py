@@ -884,7 +884,7 @@ class Ship(ScannedShip, Observable):
             return False, None
         js = response.json()
         try:
-            contract = Contract.model_validate_json(js['data']['contract'])
+            contract = Contract.model_validate(js['data']['contract'])
             contract.add_observer(create_update_contract)
             contract.update()
             return True, contract

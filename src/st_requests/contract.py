@@ -57,8 +57,8 @@ def get_all_contracts_from_server():
         total = meta.total
         current += len(js['data'])
         page = meta.page+1
-        new_ships = ta.validate_python(js['data'])
-        contracts.extend(new_ships)
+        new_contract = ta.validate_python(js['data'])
+        contracts.extend(new_contract)
     fancy_contracts = []
     for contract in contracts:
         for delivery in contract.terms.deliver:

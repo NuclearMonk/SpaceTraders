@@ -14,7 +14,7 @@ class StateSell(ShipState):
 
     def do_tick(self) -> bool:
         good, units = self.get_sell_order()
-        market = get_market(self.ship.nav.route.destination.symbol)
+        market = get_market(self.ship.nav.route.destination.symbol, force=True)
         units = min(units,market.trade_good_trade_volume(good))
         x = self.ship.sell(good, units)
         if x and self.callback:

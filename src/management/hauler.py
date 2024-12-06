@@ -66,4 +66,4 @@ class Hauler(Navigable):
             return False
         if self.ship.cargo.capacity_remaining== 0:
             return False
-        return self.transport_order.units_total > (self.transport_order.units_delivered + self.transport_order.units_picked_up)
+        return self.transport_order.units_total > self.transport_order.units_delivered + self.ship.cargo.get_item_count(self.transport_order.good.symbol)

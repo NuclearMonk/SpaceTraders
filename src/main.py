@@ -1,5 +1,4 @@
 import logging
-
 from management.fleet_manager import FleetManager
 
 
