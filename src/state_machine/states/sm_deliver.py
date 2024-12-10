@@ -28,7 +28,7 @@ class SMDeliver(StateMachine):
                              StateDeliverToShip('Deliver To Ship', self.navigable.ship, lambda: self.order.pickup_ship,
                                                 self.__get_delivery_data, lambda x: self.order_deliver(x)),
                              StateDeliverToContract('Deliver To Contract', self.navigable.ship,
-                                                    lambda: self.order.contract, self.__get_delivery_dat, lambda x: self.order_deliver(x))
+                                                    lambda: self.order.contract, self.__get_delivery_data, lambda x: self.order_deliver(x))
 
                          ],
                          [

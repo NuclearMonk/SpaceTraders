@@ -1,6 +1,6 @@
 
 
-from time import sleep
+from asyncio import sleep
 from crud.tradegood import get_good
 from management.contract_manager import ContractManager
 from management.mining_manager import MiningManager
@@ -20,9 +20,9 @@ class FleetManager():
             self.ships_dict['SHOCSOARES-2'], self.transport_manager)
         self.mining_manager = MiningManager(self.transport_manager)
 
-    def run(self):
+    async def run(self):
         while True:
-            sleep(0.5)
+            await sleep(0.5)
             if self.contract_manager.do_cycle():
                 continue
             if self.transport_manager.do_cycle():

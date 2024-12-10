@@ -15,15 +15,10 @@ from management.miner import Miner
 from management.navigable import Navigable
 from pathfinding.pathfinding import calculate_route
 from schemas.ship import ShipNavStatus
+from st_requests.contract import get_open_contracts
 from st_requests.ship import get_ship
 from st_requests.waypoint import get_waypoint
 from state_machine.states.sm_travel import SMTravel
+from utils.utils import utcnow
 
-miner = Miner(get_ship('SHOCSOARES-1'), get_waypoint('X1-Y3-B32'), keep= mining_manager.keep)
-# for step in navigable.route.steps:
-#     print(step)
-# while True:
-#     sleep(0.5)
-#     sm.do_tick()
-
-print(miner.state_machine.viz())
+print(*((c.id, c.accepted, c.fulfilled, c.deadlineToAccept>utcnow()) for c in get_open_contracts()),sep='\n')

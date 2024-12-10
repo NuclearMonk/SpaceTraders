@@ -45,7 +45,7 @@ class Transition:
 
 
 class StateMachine(State):
-    def __init__(self, name, states: List[State], trans: List[Transition], entry_state: str, root= False) -> None:
+    def __init__(self, name, states: List[State], trans: List[Transition], entry_state: str, root=False) -> None:
         self.name = name
         self.states: Dict[str, State] = {state.name: state for state in states}
         self.transitions: List[Transition] = trans
@@ -84,11 +84,12 @@ class StateMachine(State):
     def viz(self, graph=None):
         if not graph:
             graph = Digraph()
-        g = Digraph("cluster " +self.name, graph_attr={'style':'filled'}, node_attr={'shape': 'circle'})
+        g = Digraph("cluster " + self.name,
+                    graph_attr={'style': 'filled'}, node_attr={'shape': 'circle'})
         g.node(self.name)
         for state in self.states.values():
             state.viz(g)
-        g.edge(self.name, self.entry_state  )    
+        g.edge(self.name, self.entry_state)
         for trans in self.transitions:
             trans.viz(g)
         graph.subgraph(g)

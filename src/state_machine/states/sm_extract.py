@@ -21,6 +21,8 @@ class SMExtract(StateMachine):
                          [
             Transition('Awaiting Cooldown', 'Extract',
                        lambda: not self.__on_cooldown, "Cooldown = 0"),
+            Transition('Awaiting Cooldown', 'Jettison',
+                       lambda: self.__has_useless_cargo, "Has Useless Cargo"),
             Transition('Extract', 'Jettison',
                        lambda: self.__has_useless_cargo, "Has Useless Cargo"),
             Transition('Extract', 'Awaiting Pickup',

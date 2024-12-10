@@ -12,7 +12,7 @@ from logging import getLogger
 
 from st_requests.request import get_request
 from st_requests.waypoint import get_waypoint
-from utils.utils import time_until
+from utils.utils import time_until, utcnow
 
 CONTRACTS_BASE_URL = 'https://api.spacetraders.io/v2/my/contracts/'
 logger = getLogger(__name__)
@@ -83,8 +83,8 @@ def get_contract(id: str) -> Optional[Contract]:
 
 def get_open_contracts() -> List[Contract]:
     logger.info(f"getting open contracts ")
-    contracts = [c for c in get_open_contracts_db() if time_until(
-        c.terms.deadline) > timedelta(0)]
+    contracts = [c for c in get_open_contracts_db() if time_until(c.terms.deadline) > timedelta(0)]
+    contracts = [c for c in contracts if c.accepted or (not c.accepted and time_until(c.deadlineToAccept)> timedelta(0))] 
     for contract in contracts:
         contract.add_observer(create_update_contract)
     return contracts

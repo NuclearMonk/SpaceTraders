@@ -1,5 +1,5 @@
 from datetime import UTC
-from typing import Optional
+from typing import List, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -362,3 +362,8 @@ def get_ship(symbol: str) -> Ship:
         if model := __get_ship_from_db(symbol, session):
             return _ship_to_schema(model)
         return None
+
+
+# def get_ships() -> List[Ship]:
+#     with Session(engine) as session:
+#         return [_ship_to_schema(model) for model in session.scalars(select(ShipModel))]

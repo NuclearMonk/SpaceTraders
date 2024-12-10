@@ -15,10 +15,10 @@ class Miner(Navigable):
     def __init__(self, ship: Ship, waypoint: Optional[Waypoint], keep: Set[TradeSymbol], request_pickup: Callable[[Ship, TradeGood, int], None]) -> None:
         super().__init__(ship,waypoint, ShipNavStatus.IN_ORBIT)
         self.assigned_wp = waypoint
-        self.state_machine = StateMachine('Miner', [SMTravel('Travel SM', self, False),SMExtract('Extract SM', self.ship, keep,request_pickup)],
+        self.state_machine = StateMachine('Miner', [SMTravel('Travel SM', self),SMExtract('Extract SM', self.ship, keep,request_pickup)],
                                            [
                                                Transition('Travel SM', 'Extract SM', lambda : self.__at_assigned_waypoint, "In Orbit At Assigned Waypoint"),
-                                               Transition( 'Extract SM','Travel SM',  lambda: not self.__at_assigned_waypoint, "In Orbit At Assigned Waypoint")
+                                               Transition('Extract SM','Travel SM',  lambda: not self.__at_assigned_waypoint, "In Orbit At Assigned Waypoint")
                                            ],
                                           'Travel SM', root=True)
 
@@ -30,6 +30,7 @@ class Miner(Navigable):
         if self.ship.nav.live_status != ShipNavStatus.IN_ORBIT:
             return False
         if not self.assigned_wp:
+            print("CCCC")
             return False
         return self.ship.nav.waypointSymbol == self.assigned_wp.symbol
 
