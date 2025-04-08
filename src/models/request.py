@@ -1,4 +1,3 @@
-
 from typing import Optional
 from sqlalchemy import DateTime, ForeignKey, Integer, Text
 from models import Base
